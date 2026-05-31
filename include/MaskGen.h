@@ -9,5 +9,8 @@
 #include "Types.h"
 
 void generateKnightMasks(Bitboard* knightTable);
+void generatePawnAttackMasks(Bitboard* pawnAttackTable);
+void generatePawnPushMasks(Bitboard* pawnTable);
+void generateKingMasks(Bitboard *kingTable);
 
 #endif

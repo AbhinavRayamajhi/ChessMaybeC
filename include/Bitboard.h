@@ -13,6 +13,7 @@
 #define getSq(bb, sq) ((bb >> (sq)) & 1ULL)
 #define clearLSB(bb) bb &= bb -  1
 #define getLSB(bb) __builtin_ctzll(bb)
+#define popCount(bb) __builtin_popcountll(bb)
 
 static void printBitboard(Bitboard bb) {
 
@@ -22,7 +23,7 @@ static void printBitboard(Bitboard bb) {
         for(int file = 0; file < 8; ++file) {
 
             int sq = rank * 8 + file;
-            printf("%c ", (int)((bb >> sq) & 1ULL) + '0');
+            printf("%c ", (int)((bb >> sq) & 1) + '0');
         }
         printf("\n");
     }
