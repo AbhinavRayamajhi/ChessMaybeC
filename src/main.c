@@ -12,9 +12,16 @@ int main() {
     Bitboard kingTable[64];
     generateKingMasks(kingTable);
 
-    //printBitboard(kingTable[A1]);
-    //printBitboard(kingTable[A4]);
-    
+    Bitboard rookTable[64];
+    generateRookMasks(rookTable);
+
+    for (int i = 0; i < 8; ++i) {
+        printBitboard(RANKS[i]);
+    }
+
+    printBitboard(rookTable[A1]);
+    printBitboard(rookTable[H8]);
+
     runAllTests(knightTable, pawnAttackTable, kingTable);
     return 0;
 }
