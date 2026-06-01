@@ -4,8 +4,9 @@ Bitboard knightTable[64];
 Bitboard pawnAttackTable[128];
 Bitboard kingTable[64];
 Bitboard rookTable[64];
+Bitboard bishopTable[64];
 
-void generateKnightMasks(Bitboard* knightTable) {    
+void generateKnightMasks() {    
     // Knight attack offsets: +6, +10, +15, +17, -6, -10, -15, -17)
     for (int sq = 0; sq < 64; ++sq) {
 
@@ -22,11 +23,11 @@ void generateKnightMasks(Bitboard* knightTable) {
         mask |= (cur & ~FILE_A & ~FILE_B) >> 10; // SOUTH + WEST + WEST
         mask |= (cur & ~FILE_G & ~FILE_H) >>  6; // SOUTH + EAST + EAST
 
-        *knightTable++ = mask;
+        knightTable[sq] = mask;
     }
 }
 
-void generatePawnAttackMasks(Bitboard* pawnAttackTable){
+void generatePawnAttackMasks() {
     // For black pawns index sq + 64, gives us the correct masks
     for (int sq = 0; sq < 128; ++sq) {
 
@@ -43,21 +44,11 @@ void generatePawnAttackMasks(Bitboard* pawnAttackTable){
             mask |= (cur & ~FILE_H) >> 7; // SOUTH_EAST
         }
 
-        *pawnAttackTable++ = mask;
+        pawnAttackTable[sq] = mask;
     }
 }
 
-void generatePawnPushMasks(Bitboard* pawnTable) {
-    // For black pawns index sq + 64, gives us the correct masks
-    for(int sq = 0; sq < 128; ++sq) {
-
-        Bitboard mask = 0ULL;
-        Bitboard cur = 0ULL;
-        setSq(cur, sq);
-    }
-}
-
-void generateKingMasks(Bitboard* kingTable) {
+void generateKingMasks() {
 
     for (int sq = 0; sq < 64; ++sq) {
 
@@ -74,11 +65,11 @@ void generateKingMasks(Bitboard* kingTable) {
         mask |= cur >> 8; // SOUTH
         mask |= (cur & ~FILE_H) >> 7; // SOUTH_EAST
 
-        *kingTable++ = mask;
+        kingTable[sq] = mask;
     }
 }
 
-void generateRookMasks(Bitboard* rookTable) {
+void generateRookMasks() {
 
     for (int sq = 0; sq < 64; ++sq) {
 
@@ -91,10 +82,26 @@ void generateRookMasks(Bitboard* rookTable) {
         // Remove current sq from mask
         popSq(mask, sq);
 
-        *rookTable++ = mask;
+        rookTable[sq] = mask;
     }
 }
 
-void generateBishopMasks(Bitboard* bishopTable) {
+void generateBishopMasks() {
 
+    for (int sq = 0; sq < 64; ++sq) {
+
+        Bitboard mask = 0ULL;
+
+        int rank = sq / 8;
+        int file = sq % 8;
+
+        // Remove edge squares from each direction, not necessary for magic bitboards
+        mask |= DIAGS[7 + rank - file] & ~RANK_1 & ~RANK_8 & ~FILE_A & ~FILE_H;
+        mask |= ANTI_DIAGS[rank + file] & ~RANK_1 & ~RANK_8 & ~FILE_A & ~FILE_H;
+
+        // Remove current sq from mask
+        popSq(mask, sq);
+
+        bishopTable[sq] = mask;
+    }
 }

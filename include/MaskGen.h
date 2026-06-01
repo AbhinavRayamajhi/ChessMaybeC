@@ -12,11 +12,13 @@ extern Bitboard knightTable[64];
 extern Bitboard pawnAttackTable[128];
 extern Bitboard kingTable[64];
 extern Bitboard rookTable[64];
+extern Bitboard bishopTable[64];
 
-void generateKnightMasks(Bitboard* knightTable);
-void generatePawnAttackMasks(Bitboard* pawnAttackTable);
-void generatePawnPushMasks(Bitboard* pawnTable);
-void generateKingMasks(Bitboard *kingTable);
-void generateRookMasks(Bitboard *rookTable);
+void generateKnightMasks();
+void generatePawnAttackMasks();
+void generatePawnPushMasks();
+void generateKingMasks();
+void generateRookMasks();
+void generateBishopMasks();
 
 #endif

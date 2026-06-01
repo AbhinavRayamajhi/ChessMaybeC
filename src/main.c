@@ -3,10 +3,11 @@
 
 int main() {
 
-    generateKnightMasks(knightTable);
-    generatePawnAttackMasks(pawnAttackTable);
-    generateKingMasks(kingTable);
-    generateRookMasks(rookTable);
+    generateKnightMasks();
+    generatePawnAttackMasks();
+    generateKingMasks();
+    generateRookMasks();
+    generateBishopMasks();
 
     runAllTests();
     return 0;

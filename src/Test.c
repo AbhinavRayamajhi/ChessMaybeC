@@ -6,6 +6,7 @@ void runAllTests() {
     PawnAttackTableTest();
     KingTableTest();
     RookTableTest();
+    BishopTableTest();
     printf("%s\n", "All tests passed successfully!");
 }
 
@@ -51,4 +52,14 @@ void RookTableTest() {
     ASSERT(popCount(rookTable[E4]) == 10, "Rook on E4 should have 10 attacks.");
     ASSERT(popCount(rookTable[H1]) == 12, "Rook on H1 should have 12 attacks.");
     printf("%s\n", "Rook Table Tests passed...");
+}
+
+void BishopTableTest() {
+
+    ASSERT(popCount(bishopTable[A1]) == 6, "Bishop on A1 should have 6 attacks.");
+    ASSERT(popCount(bishopTable[A4]) == 5, "Bishop on A4 should have 5 attacks.");
+    ASSERT(popCount(bishopTable[A8]) == 6, "Bishop on A8 should have 6 attacks.");
+    ASSERT(popCount(bishopTable[E4]) == 9, "Bishop on E4 should have 9 attacks.");
+    ASSERT(popCount(bishopTable[H1]) == 6, "Bishop on H1 should have 6 attacks.");
+    printf("%s\n", "Bishop Table Tests passed...");
 }

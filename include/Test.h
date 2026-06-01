@@ -13,5 +13,6 @@ void KnightTableTest();
 void PawnAttackTableTest();
 void KingTableTest();
 void RookTableTest();
+void BishopTableTest();
 
 #endif
