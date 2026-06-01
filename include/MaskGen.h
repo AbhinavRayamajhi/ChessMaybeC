@@ -8,6 +8,11 @@
 #include "Bitboard.h"
 #include "Types.h"
 
+extern Bitboard knightTable[64];
+extern Bitboard pawnAttackTable[128];
+extern Bitboard kingTable[64];
+extern Bitboard rookTable[64];
+
 void generateKnightMasks(Bitboard* knightTable);
 void generatePawnAttackMasks(Bitboard* pawnAttackTable);
 void generatePawnPushMasks(Bitboard* pawnTable);

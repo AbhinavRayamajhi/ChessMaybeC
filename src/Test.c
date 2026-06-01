@@ -1,14 +1,15 @@
 #include "../include/Test.h"
 
-void runAllTests(Bitboard* knightTable, Bitboard* pawnAttackTable, Bitboard* kingTable) {
+void runAllTests() {
     printf("%s\n", "Starting Tests...");
-    KnightTableTest(knightTable);
-    PawnAttackTableTest(pawnAttackTable);
-    KingTableTest(kingTable);
+    KnightTableTest();
+    PawnAttackTableTest();
+    KingTableTest();
+    RookTableTest();
     printf("%s\n", "All tests passed successfully!");
 }
 
-void KnightTableTest(Bitboard* knightTable) {
+void KnightTableTest() {
 
     ASSERT(popCount(knightTable[A1]) == 2, "Knight on A1 should have 2 attacks.");
     ASSERT(popCount(knightTable[A4]) == 4, "Knight on A4 should have 4 attacks.");
@@ -18,7 +19,7 @@ void KnightTableTest(Bitboard* knightTable) {
     printf("%s\n", "Knight Table Tests passed...");
 }
 
-void PawnAttackTableTest(Bitboard* pawnAttackTable) {
+void PawnAttackTableTest() {
 
     
     ASSERT(popCount(pawnAttackTable[A2]) == 1, "White Pawn on A2 should have 1 attacks.");
@@ -32,7 +33,7 @@ void PawnAttackTableTest(Bitboard* pawnAttackTable) {
     printf("%s\n", "Pawn Attack Table Tests passed...");
 }
 
-void KingTableTest(Bitboard* kingTable) {
+void KingTableTest() {
 
     ASSERT(popCount(kingTable[A1]) == 3, "King on A1 should have 3 attacks.");
     ASSERT(popCount(kingTable[A4]) == 5, "King on A4 should have 5 attacks.");
@@ -40,4 +41,14 @@ void KingTableTest(Bitboard* kingTable) {
     ASSERT(popCount(kingTable[E4]) == 8, "King on E4 should have 8 attacks.");
     ASSERT(popCount(kingTable[H1]) == 3, "King on H1 should have 3 attacks.");
     printf("%s\n", "King Table Tests passed...");
+}
+
+void RookTableTest() {
+
+    ASSERT(popCount(rookTable[A1]) == 12, "Rook on A1 should have 12 attacks.");
+    ASSERT(popCount(rookTable[A4]) == 11, "Rook on A4 should have 11 attacks.");
+    ASSERT(popCount(rookTable[A8]) == 12, "Rook on A8 should have 12 attacks.");
+    ASSERT(popCount(rookTable[E4]) == 10, "Rook on E4 should have 10 attacks.");
+    ASSERT(popCount(rookTable[H1]) == 12, "Rook on H1 should have 12 attacks.");
+    printf("%s\n", "Rook Table Tests passed...");
 }

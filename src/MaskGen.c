@@ -1,5 +1,10 @@
 #include "../include/MaskGen.h"
 
+Bitboard knightTable[64];
+Bitboard pawnAttackTable[128];
+Bitboard kingTable[64];
+Bitboard rookTable[64];
+
 void generateKnightMasks(Bitboard* knightTable) {    
     // Knight attack offsets: +6, +10, +15, +17, -6, -10, -15, -17)
     for (int sq = 0; sq < 64; ++sq) {
