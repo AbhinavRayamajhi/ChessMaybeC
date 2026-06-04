@@ -136,8 +136,6 @@ uint64_t findRookMagicNumber(int sq, int bits) {
     while (!found) {
 
         // table size hard coded to 4096 because max rook blocker subset is 2^12 = 4096 
-        // and code only runs during production to find magic numbers, after which they can be 
-        // hard coded so memory efficiency not required
         Bitboard hash_checker[4096] = {0ULL};
         magic = randomMagic();
         Bitboard subset = 0ULL;
@@ -172,8 +170,6 @@ uint64_t findBishopMagicNumber(int sq, int bits) {
     while (!found) {
 
         // table size hard coded to 512 because max bishop blocker subset is 2^9 = 512 
-        // and code only runs during production to find magic numbers, after which they can be 
-        // hard coded so memory efficiency not required
         Bitboard hash_checker[512] = {0ULL};
         magic = randomMagic();
         Bitboard subset = 0ULL;
