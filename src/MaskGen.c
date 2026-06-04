@@ -3,8 +3,11 @@
 Bitboard knightTable[64];
 Bitboard pawnAttackTable[128];
 Bitboard kingTable[64];
+
 Bitboard rookTable[64];
 Bitboard bishopTable[64];
+Bitboard rookAttackTable[64][4096];
+Bitboard bishopAttackTable[64][512];
 
 void generateKnightMasks() {    
     // Knight attack offsets: +6, +10, +15, +17, -6, -10, -15, -17)

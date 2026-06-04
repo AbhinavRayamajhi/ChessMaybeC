@@ -30,10 +30,10 @@ static inline Bitboard bitboardShift(Bitboard bb, Direction dir) {
         case NORTH_NORTH_WEST : return (bb & ~FILE_A) << 15; break;
         case SOUTH_SOUTH_EAST : return (bb & ~FILE_H) >> 15; break;
         case SOUTH_SOUTH_WEST : return (bb & ~FILE_A) >> 17; break;
-        case NORTH_EAST_EAST  : return(bb & ~FILE_G & ~FILE_H) << 10; break;
-        case NORTH_WEST_WEST  : return(bb & ~FILE_A & ~FILE_B) << 6; break;
-        case SOUTH_EAST_EAST  : return(bb & ~FILE_G & ~FILE_H) >> 6; break;
-        case SOUTH_WEST_WEST  : return(bb & ~FILE_A & ~FILE_B) >> 10; break;
+        case NORTH_EAST_EAST  : return (bb & ~FILE_G & ~FILE_H) << 10; break;
+        case NORTH_WEST_WEST  : return (bb & ~FILE_A & ~FILE_B) << 6; break;
+        case SOUTH_EAST_EAST  : return (bb & ~FILE_G & ~FILE_H) >> 6; break;
+        case SOUTH_WEST_WEST  : return (bb & ~FILE_A & ~FILE_B) >> 10; break;
         default : return 0ULL;
     }
 }

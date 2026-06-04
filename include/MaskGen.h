@@ -13,6 +13,8 @@ extern Bitboard pawnAttackTable[128];
 extern Bitboard kingTable[64];
 extern Bitboard rookTable[64];
 extern Bitboard bishopTable[64];
+extern Bitboard rookAttackTable[64][4096];
+extern Bitboard bishopAttackTable[64][512];
 
 void generateKnightMasks();
 void generatePawnAttackMasks();

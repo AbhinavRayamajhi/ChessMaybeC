@@ -29,5 +29,7 @@ int main() {
     */
 
     runAllTests();
+    findAllMagics();
+
     return 0;
 }
