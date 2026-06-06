@@ -68,7 +68,7 @@ static const Bitboard ANTI_DIAGS[] = {ANTI_DIAG_1, ANTI_DIAG_2, ANTI_DIAG_3, ANT
 	ANTI_DIAG_6, ANTI_DIAG_7, ANTI_DIAG_8, ANTI_DIAG_9, ANTI_DIAG_10, ANTI_DIAG_11, ANTI_DIAG_12, 
 	ANTI_DIAG_13, ANTI_DIAG_14, ANTI_DIAG_15};
 
-typedef enum : uint8_t{
+typedef enum : uint8_t {
 	A1 = 0, B1, C1, D1, E1, F1, G1, H1,
 	    A2, B2, C2, D2, E2, F2, G2, H2,
 	    A3, B3, C3, D3, E3, F3, G3, H3,
@@ -80,7 +80,7 @@ typedef enum : uint8_t{
 		NONE
 } Square;
 
-typedef enum : uint8_t{
+typedef enum : uint8_t {
 	NORTH = 0,
 	SOUTH,
 	EAST,
@@ -113,7 +113,8 @@ typedef enum : uint8_t {
 	ROOK,
 	QUEEN,
 	KING,
-	PIECE_COUNT
+	PIECE_COUNT,
+	NO_PIECE = PAWN
 } Piece;
 
 typedef enum : uint8_t {
@@ -131,10 +132,18 @@ typedef enum : uint8_t {
 	ALL_CASTLING   = WHITE_CASTLING | BLACK_CASTLING
 } CastlingRights;
 
-typedef enum : uint16_t{
+typedef enum : uint16_t {
 	NORMAL,
-	PROMOTION  = 1 << 14,
-	EN_PASSANT = 2 << 14,
-	CASTLING   = 3 << 14
+	PROMOTION,
+	EN_PASSANT,
+	CASTLING  
 } MoveType;
+
+typedef enum : uint64_t {
+	WHITE_OO  = 0x0000000000000060ULL,
+	WHITE_OOO = 0x000000000000000EULL,
+	BLACK_OO  = WHITE_OO << 56,
+	BLACK_OOO = WHITE_OOO << 56
+} CastleMask;
+
 #endif

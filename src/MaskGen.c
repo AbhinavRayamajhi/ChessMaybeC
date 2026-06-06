@@ -113,3 +113,39 @@ void generateBishopMasks() {
         bishopTable[sq] = mask;
     }
 }
+
+Bitboard singlePawnPush(Bitboard pawns, Color sideToMove, Bitboard occ) {
+
+    if (sideToMove) {
+        return (pawns >> 8) & ~occ;
+    }
+
+    return (pawns << 8) & ~occ;
+}
+
+Bitboard doublePawnPush(Bitboard pawns, Color sideToMove, Bitboard occ) {
+
+    if (sideToMove) {
+        return singlePawnPush(singlePawnPush(pawns, BLACK, occ), BLACK, occ);
+    }
+
+    return singlePawnPush(singlePawnPush(pawns, WHITE, occ), WHITE, occ);
+}
+
+Bitboard pawnLeftAttack(Bitboard pawns, Color sideToMove) {
+
+    if (sideToMove) {
+        return (pawns & ~FILE_A) >> 9;
+    }
+
+    return (pawns & ~FILE_A) << 7;
+}
+
+Bitboard pawnRightAttack(Bitboard pawns, Color sideToMove) {
+
+    if (sideToMove) {
+        return (pawns & ~FILE_H) >> 7;
+    }
+
+    return (pawns & ~FILE_H) << 9;
+}
