@@ -146,9 +146,7 @@ void enumerateQueenMoves(MoveList* moveList, Board* board) {
 void enumeratePawnMoves(MoveList* moveList, Board* board) {
 
     Bitboard pawns = board->sideToMove ? board->pieces[BLACK][PAWN] : board->pieces[WHITE][PAWN];
-    Bitboard friends = board->sideToMove ? board->occ[BLACK] : board->occ[WHITE];
     Bitboard enemies = board->sideToMove ? board->occ[WHITE] : board->occ[BLACK];
-
 
     Bitboard singlePush = singlePawnPush(pawns, board->sideToMove, board->occ[BOTH]);
 
@@ -263,5 +261,48 @@ void enumeratePawnMoves(MoveList* moveList, Board* board) {
             Square start = board->enPassantSq + (board->sideToMove ? 7 : -9);
             addMove(moveList, make(start, board->enPassantSq, NO_PROMOTION_PIECE, EN_PASSANT));
         }
+    }
+}
+
+Bitboard getSquareAttackers(Board* board, Square sq) {
+
+    Bitboard attackers = 0ULL;
+    Bitboard self = 1ULL << sq;
+
+    attackers |= board->pieces[board->sideToMove][PAWN] & (pawnLeftAttack(self, board->sideToMove)
+        | pawnRightAttack(self, board->sideToMove));
+    attackers |= board->pieces[board->sideToMove][KNIGHT] & knightTable[sq];
+    attackers |= (board->pieces[board->sideToMove][BISHOP] | board->pieces[board->sideToMove][QUEEN])
+        & getBishopAttacks(board->occ[BOTH], sq);
+    attackers |= (board->pieces[board->sideToMove][ROOK] | board->pieces[board->sideToMove][QUEEN])
+        & getRookAttacks(board->occ[BOTH], sq);
+    attackers |= board->pieces[board->sideToMove][KING] & kingTable[sq];
+
+    return attackers;
+}
+
+void generateLegalMoves(MoveList* moveList, HistoryList* historyList, Board* board) {
+
+    enumerateKnightMoves(moveList, board);
+    enumerateKingMoves(moveList, board);
+    enumerateRookMoves(moveList, board);
+    enumerateBishopMoves(moveList, board);
+    enumerateQueenMoves(moveList, board);
+    enumeratePawnMoves(moveList, board);
+
+    for (int moveInd = 0; moveInd < moveList->end; moveInd++) {
+
+        History h;
+
+        makeMove(board, &h, moveList->moveArray[moveInd]);
+        addHistory(historyList, h);
+
+        if (getSquareAttackers(board, getLSB(board->pieces[!board->sideToMove][KING]))) {
+            moveList->moveArray[moveInd] = moveList->moveArray[moveList->end - 1];
+            --moveList->end;
+            --moveInd;
+        }
+
+        unmakeMove(board, popHistory(historyList));
     }
 }

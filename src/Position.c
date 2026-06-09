@@ -56,6 +56,7 @@ void makeMove(Board* board, History* history, Move move) {
     else if (getMoveType(move) == EN_PASSANT) {
 
         board->pieces[!board->sideToMove][PAWN] ^= (1ULL << (target + (board->sideToMove ? -8 : 8)));
+        history->captured = PAWN;
     }
     else if (getMoveType(move) == CASTLING) {
 
@@ -63,22 +64,18 @@ void makeMove(Board* board, History* history, Move move) {
         if (target == G1) {
             rookFrom = H1;
             rookTo = F1;
-            board->castlingRight &= ~WHITE_KINGSIDE;
         }
         else if (target == G8) {
             rookFrom = H8;
             rookTo = F8;
-            board->castlingRight &= ~BLACK_KINGSIDE;
         }
         else if (target == C1) {
             rookFrom = A1;
             rookTo = D1;
-            board->castlingRight &= ~WHITE_QUEENSIDE;
         }
         else {
             rookFrom = A8;
             rookTo = D8;
-            board->castlingRight &= ~BLACK_QUEENSIDE;
         }
 
         board->pieces[board->sideToMove][ROOK] ^= (1ULL << rookFrom) | (1ULL << rookTo);
@@ -102,6 +99,57 @@ void makeMove(Board* board, History* history, Move move) {
     updateOcc(board);
 }
 
-void unmakeMove(Board* board, History* history) {
+void unmakeMove(Board* board, History history) {
 
+    Square start = getStartSq(history.prevMove);
+    Square target = getTargetSq(history.prevMove);
+    
+    board->enPassantSq = history.prevEnPassantSq;
+    board->castlingRight = history.prevCastlingRights;
+    board->halfMoveClock = history.prevHalfMoveClock;
+
+    if (history.captured != NO_PIECE) {
+
+        if (getMoveType(history.prevMove) != EN_PASSANT) {
+            board->pieces[board->sideToMove][history.captured] ^= 1ULL << target;
+        }
+        else {
+            board->pieces[board->sideToMove][PAWN] ^= (1ULL << (target + (board->sideToMove ? 8 : -8)));
+        }
+    }
+
+    if (getMoveType(history.prevMove) == PROMOTION) {
+
+        popSq(board->pieces[!board->sideToMove][getPromotionPiece(history.prevMove)], target);
+        setSq(board->pieces[!board->sideToMove][PAWN], start);
+    }
+    else if (getMoveType(history.prevMove) == CASTLING) {
+
+        Square rookFrom, rookTo;
+        if (target == G1) {
+            rookFrom = H1;
+            rookTo = F1;
+        }
+        else if (target == G8) {
+            rookFrom = H8;
+            rookTo = F8;
+        }
+        else if (target == C1) {
+            rookFrom = A1;
+            rookTo = D1;
+        }
+        else {
+            rookFrom = A8;
+            rookTo = D8;
+        }
+
+        board->pieces[!board->sideToMove][ROOK] ^= (1ULL << rookFrom) | (1ULL << rookTo);
+        board->pieces[!board->sideToMove][KING] ^= (1ULL << start) | (1ULL << target);
+    }
+    else {
+        board->pieces[!board->sideToMove][history.moved] ^= (1ULL << start) | (1ULL << target);
+    }
+
+    board->sideToMove ^= 1;
+    updateOcc(board);
 }

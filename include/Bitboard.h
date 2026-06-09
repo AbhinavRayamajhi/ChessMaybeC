@@ -38,7 +38,7 @@ static inline Bitboard bitboardShift(Bitboard bb, Direction dir) {
     }
 }
 
-
+/*
 static void printBitboard(Bitboard bb) {
 
     for (int rank = 7; rank >= 0; --rank){
@@ -53,5 +53,5 @@ static void printBitboard(Bitboard bb) {
     }
     printf("\n    a b c d e f g h\n\n");
 }
-
+*/
 #endif
