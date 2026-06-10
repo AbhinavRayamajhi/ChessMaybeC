@@ -6,7 +6,7 @@
 
 //  0 -  5 : start sq
 //  6 - 11 : target sq
-// 12 - 13 : promotion type: no promotion piece will be passed as Pawn
+// 12 - 13 : promotion type: no promotion piece will be passed as Knight
 // 14 - 15 : move type(0- normal, 1 - promotion, 2 - en passant, 3 - castling)
 typedef uint16_t Move;
 
@@ -29,6 +29,22 @@ typedef struct {
 static inline void addMove(MoveList* moveList, Move m) {
     moveList->moveArray[moveList->end] = m;
     ++moveList->end;
+}
+
+static inline char rankFromSquare(Square sq) {
+    return sq / 8 + '1';
+}
+
+static inline char fileFromSquare(Square sq) {
+    return FILE_MAP[sq % 8];
+}
+
+static inline void printMove(Move m) {
+    printf("%c%c%c%c", fileFromSquare(getStartSq(m)), rankFromSquare(getStartSq(m)),
+        fileFromSquare(getTargetSq(m)), rankFromSquare(getTargetSq(m)));
+    if (getMoveType(m) == PROMOTION) {
+        printf("%c", PROM_PIECE[getPromotionPiece(m)]);
+    }
 }
 
 #endif

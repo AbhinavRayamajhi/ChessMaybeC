@@ -157,14 +157,14 @@ void enumeratePawnMoves(MoveList* moveList, Board* board) {
         Square start = target - (board->sideToMove ? -8 : 8);
 
         // promotion checks
-        if (!board->sideToMove && (target & RANK_8)) {
+        if (!board->sideToMove && target >= 56) {
 
             addMove(moveList, make(start, target, QUEEN, PROMOTION));
             addMove(moveList, make(start, target, ROOK, PROMOTION));
             addMove(moveList, make(start, target, BISHOP, PROMOTION));
             addMove(moveList, make(start, target, KNIGHT, PROMOTION));
         }
-        else if (board->sideToMove && (target & RANK_1)) {
+        else if (board->sideToMove && target <= 7) {
 
             addMove(moveList, make(start, target, QUEEN, PROMOTION));
             addMove(moveList, make(start, target, ROOK, PROMOTION));
@@ -197,14 +197,14 @@ void enumeratePawnMoves(MoveList* moveList, Board* board) {
         Square start = target - (board->sideToMove ? -9 : 7);
 
          // promotion checks
-        if (!board->sideToMove && (target & RANK_8)) {
+        if (!board->sideToMove && target >= 56) {
 
             addMove(moveList, make(start, target, QUEEN, PROMOTION));
             addMove(moveList, make(start, target, ROOK, PROMOTION));
             addMove(moveList, make(start, target, BISHOP, PROMOTION));
             addMove(moveList, make(start, target, KNIGHT, PROMOTION));
         }
-        else if (board->sideToMove && (target & RANK_1)) {
+        else if (board->sideToMove && target <= 7) {
 
             addMove(moveList, make(start, target, QUEEN, PROMOTION));
             addMove(moveList, make(start, target, ROOK, PROMOTION));
@@ -226,14 +226,14 @@ void enumeratePawnMoves(MoveList* moveList, Board* board) {
         Square start = target - (board->sideToMove ? -7 : 9);
 
          // promotion checks
-        if (!board->sideToMove && (target & RANK_8)) {
+        if (!board->sideToMove && target >= 56) {
 
             addMove(moveList, make(start, target, QUEEN, PROMOTION));
             addMove(moveList, make(start, target, ROOK, PROMOTION));
             addMove(moveList, make(start, target, BISHOP, PROMOTION));
             addMove(moveList, make(start, target, KNIGHT, PROMOTION));
         }
-        else if (board->sideToMove && (target & RANK_1)) {
+        else if (board->sideToMove && target <= 7) {
 
             addMove(moveList, make(start, target, QUEEN, PROMOTION));
             addMove(moveList, make(start, target, ROOK, PROMOTION));
@@ -281,21 +281,20 @@ Bitboard getSquareAttackers(Board* board, Square sq) {
     return attackers;
 }
 
-void generateLegalMoves(MoveList* moveList, HistoryList* historyList, Board* board) {
+void generateLegalMoves(MoveList* moveList, Board* board) {
 
+    enumeratePawnMoves(moveList, board);
     enumerateKnightMoves(moveList, board);
-    enumerateKingMoves(moveList, board);
     enumerateRookMoves(moveList, board);
     enumerateBishopMoves(moveList, board);
     enumerateQueenMoves(moveList, board);
-    enumeratePawnMoves(moveList, board);
+    enumerateKingMoves(moveList, board);
 
     for (int moveInd = 0; moveInd < moveList->end; moveInd++) {
 
         History h;
 
         makeMove(board, &h, moveList->moveArray[moveInd]);
-        addHistory(historyList, h);
 
         if (getSquareAttackers(board, getLSB(board->pieces[!board->sideToMove][KING]))) {
             moveList->moveArray[moveInd] = moveList->moveArray[moveList->end - 1];
@@ -303,6 +302,6 @@ void generateLegalMoves(MoveList* moveList, HistoryList* historyList, Board* boa
             --moveInd;
         }
 
-        unmakeMove(board, popHistory(historyList));
+        unmakeMove(board, &h);
     }
 }

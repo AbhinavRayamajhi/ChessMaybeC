@@ -2,6 +2,7 @@
 #define MOVE_GEN_H
 
 #include <stdlib.h>
+#include "Bitboard.h"
 #include "Board.h"
 #include "Magic.h"
 #include "MaskGen.h"
@@ -18,6 +19,6 @@ void enumerateBishopMoves(MoveList* moveList, Board *board);
 void enumerateQueenMoves(MoveList* moveList, Board* board);
 void enumeratePawnMoves(MoveList* moveList, Board* board);
 
-void generateLegalMoves(MoveList* moveList, HistoryList* historyList, Board* board);
+void generateLegalMoves(MoveList* moveList, Board* board);
 
 #endif

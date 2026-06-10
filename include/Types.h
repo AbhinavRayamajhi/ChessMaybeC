@@ -27,7 +27,9 @@
 #define RANK_8 0xFF00000000000000
 
 static const Bitboard FILES[] = {FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H};
-static const Bitboard RANKS[] = {RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8};
+static const Bitboard RANKS[] = { RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8 };
+
+static const char FILE_MAP[8] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' };
 
 #define DIAG_1 0x0000000000000080
 #define DIAG_2 0x0000000000008040
@@ -115,8 +117,10 @@ typedef enum : uint8_t {
 	KING,
 	PIECE_COUNT,
 	NO_PIECE,
-	NO_PROMOTION_PIECE = PAWN
+	NO_PROMOTION_PIECE = 0
 } Piece;
+
+static const char PROM_PIECE[] = { 'N', 'B', 'R' };
 
 typedef enum : uint8_t {
 	NO_CASTLING,

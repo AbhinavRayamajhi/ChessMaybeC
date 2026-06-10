@@ -29,7 +29,7 @@ void makeMove(Board* board, History* history, Move move) {
             if (piece == PAWN) {
                 // set en passant sq if double push
                 if (start + 16 == target) board->enPassantSq = start + 8;
-                if (start - 16 == target) board->enPassantSq = start - 8;
+                else if (start - 16 == target) board->enPassantSq = start - 8;
                 // reset half move clock since pawn move
                 board->halfMoveClock = 0;
             }
@@ -99,31 +99,31 @@ void makeMove(Board* board, History* history, Move move) {
     updateOcc(board);
 }
 
-void unmakeMove(Board* board, History history) {
+void unmakeMove(Board* board, History* history) {
 
-    Square start = getStartSq(history.prevMove);
-    Square target = getTargetSq(history.prevMove);
+    Square start = getStartSq(history->prevMove);
+    Square target = getTargetSq(history->prevMove);
     
-    board->enPassantSq = history.prevEnPassantSq;
-    board->castlingRight = history.prevCastlingRights;
-    board->halfMoveClock = history.prevHalfMoveClock;
+    board->enPassantSq = history->prevEnPassantSq;
+    board->castlingRight = history->prevCastlingRights;
+    board->halfMoveClock = history->prevHalfMoveClock;
 
-    if (history.captured != NO_PIECE) {
+    if (history->captured != NO_PIECE) {
 
-        if (getMoveType(history.prevMove) != EN_PASSANT) {
-            board->pieces[board->sideToMove][history.captured] ^= 1ULL << target;
+        if (getMoveType(history->prevMove) != EN_PASSANT) {
+            board->pieces[board->sideToMove][history->captured] ^= 1ULL << target;
         }
         else {
             board->pieces[board->sideToMove][PAWN] ^= (1ULL << (target + (board->sideToMove ? 8 : -8)));
         }
     }
 
-    if (getMoveType(history.prevMove) == PROMOTION) {
+    if (getMoveType(history->prevMove) == PROMOTION) {
 
-        popSq(board->pieces[!board->sideToMove][getPromotionPiece(history.prevMove)], target);
+        popSq(board->pieces[!board->sideToMove][getPromotionPiece(history->prevMove)], target);
         setSq(board->pieces[!board->sideToMove][PAWN], start);
     }
-    else if (getMoveType(history.prevMove) == CASTLING) {
+    else if (getMoveType(history->prevMove) == CASTLING) {
 
         Square rookFrom, rookTo;
         if (target == G1) {
@@ -147,7 +147,7 @@ void unmakeMove(Board* board, History history) {
         board->pieces[!board->sideToMove][KING] ^= (1ULL << start) | (1ULL << target);
     }
     else {
-        board->pieces[!board->sideToMove][history.moved] ^= (1ULL << start) | (1ULL << target);
+        board->pieces[!board->sideToMove][history->moved] ^= (1ULL << start) | (1ULL << target);
     }
 
     board->sideToMove ^= 1;

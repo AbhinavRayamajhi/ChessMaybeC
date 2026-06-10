@@ -126,10 +126,10 @@ Bitboard singlePawnPush(Bitboard pawns, Color sideToMove, Bitboard occ) {
 Bitboard doublePawnPush(Bitboard pawns, Color sideToMove, Bitboard occ) {
 
     if (sideToMove) {
-        return singlePawnPush(singlePawnPush(pawns, BLACK, occ), BLACK, occ);
+        return singlePawnPush(singlePawnPush(pawns & RANK_7, BLACK, occ), BLACK, occ);
     }
 
-    return singlePawnPush(singlePawnPush(pawns, WHITE, occ), WHITE, occ);
+    return singlePawnPush(singlePawnPush(pawns & RANK_2, WHITE, occ), WHITE, occ);
 }
 
 Bitboard pawnLeftAttack(Bitboard pawns, Color sideToMove) {

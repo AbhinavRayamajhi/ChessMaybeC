@@ -120,3 +120,37 @@ void MagicTableTests() {
     ASSERT(bishopAttacksForBlockers(bb, H8) == getBishopAttacks(bb, H8), "Bishop attacks not matching");
     printf("%s\n", "Bishop Magic verified..");
 }
+
+int perft(Board* board, int depth, int rootDepth, int debug) {
+
+    if (depth == 0) return 1;
+
+    MoveList moveList;
+    moveList.end = 0;
+
+    generateLegalMoves(&moveList, board);
+    int numMoves = 0;
+
+    for (int i = 0; i < moveList.end; ++i) {
+
+        History h;
+        makeMove(board, &h, moveList.moveArray[i]);
+        int node = perft(board, depth - 1, rootDepth, debug);
+        unmakeMove(board, &h);
+
+        if (depth == rootDepth) {
+            printMove(moveList.moveArray[i]);
+            printf(" : %d\n", node);
+        }
+
+        if (debug && (rootDepth - 1 == depth)) {
+            printf("\t");
+            printMove(moveList.moveArray[i]);
+            printf(" : %d\n", node);
+        }
+
+        numMoves += node;
+    }
+
+    return numMoves;
+}

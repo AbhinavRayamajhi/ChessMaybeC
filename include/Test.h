@@ -22,4 +22,6 @@ void RookAttackForBlockersTest();
 void BishopAttackForBlockersTest();
 void MagicTableTests();
 
+int perft(Board* board, int depth, int rootDepth, int debug);
+
 #endif

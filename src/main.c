@@ -40,7 +40,14 @@ int main() {
     printBitboard(board.pieces[BLACK][KING]  );
     */
 
-    runAllTests();
+    // runAllTests();
+    History h;
+    Board board = getInitialBoard();
+    Move m = make(E2, E3, NO_PROMOTION_PIECE, NORMAL);
+    int depth = 5;
+    int debug = 1;
 
+    //makeMove(&board, &h, m);
+    printf("%d\n", perft(&board, depth, depth, debug));
     return 0;
 }
