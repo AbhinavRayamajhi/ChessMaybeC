@@ -289,10 +289,11 @@ void generateLegalMoves(MoveList* moveList, Board* board) {
     enumerateRookMoves(moveList, board);
     enumerateQueenMoves(moveList, board);
     enumerateKingMoves(moveList, board);
-
+    
     for (int moveInd = 0; moveInd < moveList->end; moveInd++) {
 
         History h;
+        
 
         makeMove(board, &h, moveList->moveArray[moveInd]);
 
@@ -300,6 +301,38 @@ void generateLegalMoves(MoveList* moveList, Board* board) {
             moveList->moveArray[moveInd] = moveList->moveArray[moveList->end - 1];
             --moveList->end;
             --moveInd;
+        }
+
+        else if (getMoveType(moveList->moveArray[moveInd]) == CASTLING) {
+
+            Bitboard castleChecks = 0ULL;
+            Square target = getTargetSq(moveList->moveArray[moveInd]);
+
+            if (board->sideToMove) {
+
+                if (target == G1) {
+                    castleChecks = getSquareAttackers(board, E1) | getSquareAttackers(board, F1);
+                }
+
+                else if (target == C1) {
+                    castleChecks = getSquareAttackers(board, E1) | getSquareAttackers(board, D1);
+                }
+            }
+            else {
+                
+                if (target == G8) {
+                    castleChecks = getSquareAttackers(board, E8) | getSquareAttackers(board, F8);
+                }
+                else if (target == C8) {
+                    castleChecks = getSquareAttackers(board, E8) | getSquareAttackers(board, D8);
+                }
+            }
+
+            if (castleChecks) {
+                moveList->moveArray[moveInd] = moveList->moveArray[moveList->end - 1];
+                --moveList->end;
+                --moveInd;
+            }
         }
 
         unmakeMove(board, &h);

@@ -1,7 +1,9 @@
 #ifndef TEST_H
 #define TEST_H
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 #include "Bitboard.h"
 #include "Types.h"
 #include "MaskGen.h"

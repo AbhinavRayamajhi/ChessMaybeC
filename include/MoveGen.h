@@ -19,6 +19,7 @@ void enumerateBishopMoves(MoveList* moveList, Board *board);
 void enumerateQueenMoves(MoveList* moveList, Board* board);
 void enumeratePawnMoves(MoveList* moveList, Board* board);
 
+Bitboard getSquareAttackers(Board* board, Square sq);
 void generateLegalMoves(MoveList* moveList, Board* board);
 
 #endif

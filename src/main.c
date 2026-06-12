@@ -40,22 +40,25 @@ int main() {
     printBitboard(board.pieces[BLACK][KING]  );
     runAllTableTests();
     
-    History h;
-    Board board = getBoardFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-    Move m1 = make(D2, D4, NO_PROMOTION_PIECE, NORMAL);
-    Move m2 = make(C7, C5, NO_PROMOTION_PIECE, NORMAL);
-    Move m3 = make(E1, D2, NO_PROMOTION_PIECE, NORMAL);
-    Move m4 = make(C5, D4, NO_PROMOTION_PIECE, NORMAL);
-    makeMove(&board, &h, m1);
-    makeMove(&board, &h, m2);
-    makeMove(&board, &h, m3);
-    makeMove(&board, &h, m4);
-    int depth = 5;
-    int debug = 0;
-    int deeperSearch = 0;
-
-    printf("%d\n", perft(&board, depth, depth, debug, deeperSearch));
+    
     */
+    // History h;
+    // Board board = getBoardFromFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -  0 1");
+    // Move m1 = make(A2, A3, NO_PROMOTION_PIECE, NORMAL);
+    // Move m2 = make(B4, B3, NO_PROMOTION_PIECE, NORMAL);
+    // Move m3 = make(D2, C1, NO_PROMOTION_PIECE, NORMAL);
+    // Move m4 = make(E7, B4, NO_PROMOTION_PIECE, NORMAL);
+    // Move m5 = make(B2, B3, NO_PROMOTION_PIECE, NORMAL);
+    // makeMove(&board, &h, m1);
+    // makeMove(&board, &h, m2);
+    // makeMove(&board, &h, m3);
+    // makeMove(&board, &h, m4);
+    //makeMove(&board, &h, m5);
+    // int depth = 5;
+    // int debug = 1;
+    // int deeperSearch = 0;
+
+    // printf("%d\n", perft(&board, depth, depth, debug, deeperSearch));
 
     runAllPerftTests();
     return 0;

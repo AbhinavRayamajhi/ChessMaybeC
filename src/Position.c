@@ -35,7 +35,11 @@ void makeMove(Board* board, History* history, Move move) {
             }
 
             // king move cancels all castling
-            if (piece == KING) board->castlingRight = NO_CASTLING;
+            if (piece == KING) {
+
+                if (board->sideToMove) board->castlingRight &= ~BLACK_CASTLING;
+                else board->castlingRight &= ~WHITE_CASTLING;
+            }
         }
         if (getSq(board->pieces[!board->sideToMove][piece], target)) {
 
@@ -55,7 +59,7 @@ void makeMove(Board* board, History* history, Move move) {
     }
     else if (getMoveType(move) == EN_PASSANT) {
 
-        board->pieces[!board->sideToMove][PAWN] ^= (1ULL << (target + (board->sideToMove ? -8 : 8)));
+        board->pieces[!board->sideToMove][PAWN] ^= (1ULL << (target + (board->sideToMove ? 8 : -8)));
         history->captured = PAWN;
     }
     else if (getMoveType(move) == CASTLING) {
@@ -114,7 +118,7 @@ void unmakeMove(Board* board, History* history) {
             board->pieces[board->sideToMove][history->captured] ^= 1ULL << target;
         }
         else {
-            board->pieces[board->sideToMove][PAWN] ^= (1ULL << (target + (board->sideToMove ? 8 : -8)));
+            board->pieces[board->sideToMove][PAWN] ^= (1ULL << (target + (board->sideToMove ? -8 : 8)));
         }
     }
 

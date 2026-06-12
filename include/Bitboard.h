@@ -38,7 +38,7 @@ static inline Bitboard bitboardShift(Bitboard bb, Direction dir) {
     }
 }
 
-static void printBitboard(Bitboard bb) {
+static void __attribute__((unused)) printBitboard(Bitboard bb) {
 
     for (int rank = 7; rank >= 0; --rank){
 
