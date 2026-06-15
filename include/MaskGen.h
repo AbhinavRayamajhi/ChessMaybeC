@@ -23,6 +23,8 @@ void generateKingMasks();
 void generateRookMasks();
 void generateBishopMasks();
 
+void initMasks();
+
 Bitboard singlePawnPush(Bitboard pawns, Color sideToMove, Bitboard occ);
 Bitboard doublePawnPush(Bitboard pawns, Color sideToMove, Bitboard occ);
 Bitboard pawnLeftAttack(Bitboard pawns, Color sideToMove);

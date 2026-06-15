@@ -86,16 +86,16 @@ void makeMove(Board* board, History* history, Move move) {
     }
 
     // if anything moves from h1, h8, a1, a8, castling rights is revoked, checking if moved piece is rook could be faster, Need to check
-    if (start == H1) {
+    if (start == H1 || target == H1) {
         board->castlingRight &= ~WHITE_KINGSIDE;
     }
-    else if (start == H8) {
+    else if (start == H8 || target == H8) {
         board->castlingRight &= ~BLACK_KINGSIDE;
     }
-    else if (start == A1) {
+    else if (start == A1 || target == A1) {
         board->castlingRight &= ~WHITE_QUEENSIDE;
     }
-    else if (start == A8) {
+    else if (start == A8 || target == H8) {
         board->castlingRight &= ~BLACK_QUEENSIDE;
     }
 

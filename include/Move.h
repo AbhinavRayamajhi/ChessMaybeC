@@ -45,6 +45,7 @@ static inline void printMove(Move m) {
     if (getMoveType(m) == PROMOTION) {
         printf("%c", PROM_PIECE[getPromotionPiece(m)]);
     }
+    printf("\n");
 }
 
 #endif

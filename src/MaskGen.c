@@ -114,6 +114,14 @@ void generateBishopMasks() {
     }
 }
 
+void initMasks() {
+    generateKnightMasks();
+    generatePawnAttackMasks();
+    generateKingMasks();
+    generateRookMasks();
+    generateBishopMasks();
+}
+
 Bitboard singlePawnPush(Bitboard pawns, Color sideToMove, Bitboard occ) {
 
     if (sideToMove) {
