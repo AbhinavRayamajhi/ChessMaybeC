@@ -16,7 +16,7 @@ int evaluate(const Board* board) {
     return board->sideToMove == WHITE ? score : -score;
 }
 
-int negamax(Board* board, int depth) {
+int negamax(Board* board, int depth, int* nodes, int alpha, int beta) {
 
     if (depth == 0) {
         return evaluate(board);
@@ -25,23 +25,28 @@ int negamax(Board* board, int depth) {
     MoveList moveList;
     moveList.end = 0;
 
-    int best = INT32_MIN + 1;
     generateLegalMoves(&moveList, board);
 
     for (int i = 0; i < moveList.end; ++i) {
         History history;
         makeMove(board, &history, moveList.moveArray[i]);
-        int score = -negamax(board, depth - 1);
+        int score = -negamax(board, depth - 1, nodes, -beta, -alpha);
         unmakeMove(board, &history);
 
-        if (score > best) {
-            best = score;
+        (*nodes)++;
+
+        if (score >= beta) {
+            return beta;
+        }
+        if (score > alpha) {
+            alpha = score;
         }
     }
-    return best;
+
+    return alpha;
 }
     
-Move findBestMove(Board* board, int depth) {
+Move findBestMove(Board* board, int depth, int* nodes) {
 
     MoveList moveList;
     moveList.end = 0;
@@ -54,9 +59,10 @@ Move findBestMove(Board* board, int depth) {
     for (int i = 0; i < moveList.end; ++i) {
         History history;
         makeMove(board, &history, moveList.moveArray[i]);
-        int score = -negamax(board, depth - 1);
+        int score = -negamax(board, depth - 1, nodes, INT32_MIN + 1, INT32_MAX);
         unmakeMove(board, &history);
 
+        (*nodes)++;
         if (score > best) {
             best = score;
             bestMove = moveList.moveArray[i];
