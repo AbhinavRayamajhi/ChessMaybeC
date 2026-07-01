@@ -1,4 +1,4 @@
-#include "../include/Search.h"
+#include "Search.h"
 
 const int materialVal[] = { 100, 320, 330, 500, 900 };
 

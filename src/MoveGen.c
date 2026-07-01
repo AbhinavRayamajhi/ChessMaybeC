@@ -1,4 +1,4 @@
-#include "../include/MoveGen.h"
+#include "MoveGen.h"
 
 Bitboard getRookAttacks(Bitboard occ, int sq) {
 
@@ -318,6 +318,7 @@ void generateLegalMoves(MoveList* moveList, Board* board) {
                     castleChecks = getSquareAttackers(board, E1) | getSquareAttackers(board, D1);
                 }
             }
+            
             else {
                 
                 if (target == G8) {

@@ -22,24 +22,29 @@ static inline Move make(Square start, Square target, Piece promPiece, MoveType m
 
 // list of moves definition, theoretical max moves in position is 218 so array size set to 256
 typedef struct {
+    
     Move moveArray[256];
     uint8_t end;
 } MoveList;
 
 static inline void addMove(MoveList* moveList, Move m) {
+
     moveList->moveArray[moveList->end] = m;
     ++moveList->end;
 }
 
 static inline char rankFromSquare(Square sq) {
+
     return sq / 8 + '1';
 }
 
 static inline char fileFromSquare(Square sq) {
+
     return FILE_MAP[sq % 8];
 }
 
 static inline void printMove(Move m) {
+
     printf("%c%c%c%c", fileFromSquare(getStartSq(m)), rankFromSquare(getStartSq(m)),
         fileFromSquare(getTargetSq(m)), rankFromSquare(getTargetSq(m)));
     if (getMoveType(m) == PROMOTION) {

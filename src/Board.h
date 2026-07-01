@@ -2,7 +2,6 @@
 #define BOARD_H
 
 #include <stdlib.h>
-#include "Bitboard.h"
 #include "Types.h"
 
 typedef struct {

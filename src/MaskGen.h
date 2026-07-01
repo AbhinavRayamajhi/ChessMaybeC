@@ -1,0 +1,32 @@
+/*
+* Pre computes attack masks for all pieces per sq, runs once during initialization of the engine
+*/
+
+#ifndef MASKGEN_H
+#define MASKGEN_H
+
+#include "Types.h"
+
+extern Bitboard knightTable[64];
+extern Bitboard pawnAttackTable[128];
+extern Bitboard kingTable[64];
+extern Bitboard rookTable[64];
+extern Bitboard bishopTable[64];
+extern Bitboard rookAttackTable[64][4096];
+extern Bitboard bishopAttackTable[64][512];
+
+void generateKnightMasks();
+void generatePawnAttackMasks();
+void generatePawnPushMasks();
+void generateKingMasks();
+void generateRookMasks();
+void generateBishopMasks();
+
+void initMasks();
+
+Bitboard singlePawnPush(Bitboard pawns, Color sideToMove, Bitboard occ);
+Bitboard doublePawnPush(Bitboard pawns, Color sideToMove, Bitboard occ);
+Bitboard pawnLeftAttack(Bitboard pawns, Color sideToMove);
+Bitboard pawnRightAttack(Bitboard pawns, Color sideToMove);
+
+#endif

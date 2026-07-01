@@ -2,8 +2,7 @@
 #define MAGIC_H
 
 #include <stdlib.h>
-#include "Bitboard.h"
-#include "MaskGen.h"
+#include "Types.h"
 
 Bitboard rookAttacksForBlockers(Bitboard blockers, int sq);
 Bitboard bishopAttacksForBlockers(Bitboard blockers, int sq);

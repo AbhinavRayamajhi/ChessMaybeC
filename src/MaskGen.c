@@ -1,4 +1,6 @@
-#include "../include/MaskGen.h"
+#include "MaskGen.h"
+
+#include "Bitboard.h"
 
 Bitboard knightTable[64];
 Bitboard pawnAttackTable[128];

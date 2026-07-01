@@ -1,4 +1,7 @@
-#include "../include/Magic.h"
+#include "Magic.h"
+
+#include "Bitboard.h"
+#include "MaskGen.h"
 
 // Generate 64 bit random num
 uint64_t rand64() {
@@ -18,52 +21,20 @@ Bitboard rookAttacksForBlockers(Bitboard blockers, int sq) {
     Bitboard ray = 0ULL;
     setSq(cur, sq);
 
-    ray = bitboardShift(cur, NORTH);
-    while (ray != 0ULL)
-    {
+    Direction directions[] = { NORTH, SOUTH, EAST, WEST };
 
-        attacks |= ray;
-        if(ray & blockers) {
-            break;
+    for (int i = 0; i < 4; ++i) {
+
+        ray = bitboardShift(cur, directions[i]);
+        while (ray != 0ULL) {
+
+            attacks |= ray;
+            if (ray & blockers) {
+                break;
+            }
+
+            ray = bitboardShift(ray, directions[i]);
         }
-
-        ray = bitboardShift(ray, NORTH);
-    }
-
-    ray = bitboardShift(cur, SOUTH);
-    while (ray != 0ULL)
-    {
-
-        attacks |= ray;
-        if(ray & blockers) {
-            break;
-        }
-
-        ray = bitboardShift(ray, SOUTH);
-    }
-
-    ray = bitboardShift(cur, WEST);
-    while (ray != 0ULL)
-    {
-
-        attacks |= ray;
-        if(ray & blockers) {
-            break;
-        }
-
-        ray = bitboardShift(ray, WEST);
-    }
-
-    ray = bitboardShift(cur, EAST);
-    while (ray != 0ULL)
-    {
-
-        attacks |= ray;
-        if(ray & blockers) {
-            break;
-        }
-
-        ray = bitboardShift(ray, EAST);
     }
 
     return attacks;
@@ -76,52 +47,20 @@ Bitboard bishopAttacksForBlockers(Bitboard blockers, int sq) {
     Bitboard ray = 0ULL;
     setSq(cur, sq);
 
-    ray = bitboardShift(cur, NORTH_WEST);
-    while (ray != 0ULL)
-    {
+    Direction directions[] = { NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST };
 
-        attacks |= ray;
-        if(ray & blockers) {
-            break;
+    for (int i = 0; i < 4; ++i) {
+
+        ray = bitboardShift(cur, directions[i]);
+        while (ray != 0ULL) {
+
+            attacks |= ray;
+            if (ray & blockers) {
+                break;
+            }
+
+            ray = bitboardShift(ray, directions[i]);
         }
-
-        ray = bitboardShift(ray, NORTH_WEST);
-    }
-
-    ray = bitboardShift(cur, SOUTH_WEST);
-    while (ray != 0ULL)
-    {
-
-        attacks |= ray;
-        if(ray & blockers) {
-            break;
-        }
-
-        ray = bitboardShift(ray, SOUTH_WEST);
-    }
-
-    ray = bitboardShift(cur, NORTH_EAST);
-    while (ray != 0ULL)
-    {
-
-        attacks |= ray;
-        if(ray & blockers) {
-            break;
-        }
-
-        ray = bitboardShift(ray, NORTH_EAST);
-    }
-
-    ray = bitboardShift(cur, SOUTH_EAST);
-    while (ray != 0ULL)
-    {
-
-        attacks |= ray;
-        if(ray & blockers) {
-            break;
-        }
-
-        ray = bitboardShift(ray, SOUTH_EAST);
     }
 
     return attacks;

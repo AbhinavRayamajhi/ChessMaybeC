@@ -1,4 +1,4 @@
-#include "../include/Test.h"
+#include "Test.h"
 
 void runAllTableTests() {
     printf("%s\n", "Starting Table Tests...");
@@ -123,12 +123,12 @@ void MagicTableTests() {
 
 int perft(Board* board, int depth, int rootDepth, int debug, int deeperSearch) {
 
-    if (depth == 0) return 1;
-
     MoveList moveList;
     moveList.end = 0;
-
     generateLegalMoves(&moveList, board);
+
+    if (depth == 1) return moveList.end;
+
     int numMoves = 0;
 
     for (int i = 0; i < moveList.end; ++i) {

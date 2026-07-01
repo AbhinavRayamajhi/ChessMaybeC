@@ -1,4 +1,4 @@
-#include "../include/Position.h"
+#include "Position.h"
 
 void makeMove(Board* board, History* history, Move move) {
 
