@@ -16,13 +16,12 @@ static inline Piece getPromotionPiece(Move m) { return ((m >> 12) & 0b11) + 1; }
 static inline MoveType getMoveType(Move m) { return (m >> 14) & 0b11; }
 
 // make sure to pass 0 for prom piece when creating regular moves
-static inline Move make(Square start, Square target, Piece promPiece, MoveType moveT) {
+static inline Move create(Square start, Square target, Piece promPiece, MoveType moveT) {
     return (Move)(start | (target << 6) | (promPiece << 12) | (moveT << 14));
 }
 
 // list of moves definition, theoretical max moves in position is 218 so array size set to 256
-typedef struct {
-    
+typedef struct {    
     Move moveArray[256];
     uint8_t end;
 } MoveList;

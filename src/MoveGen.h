@@ -9,15 +9,12 @@
 #include "Move.h"
 #include "Position.h"
 
-Bitboard getRookAttacks(Bitboard occ, int sq);
-Bitboard getBishopAttacks(Bitboard occ, int sq);
-
-void enumerateKnightMoves(MoveList* moveList, Board* board);
-void enumerateKingMoves(MoveList* moveList, Board* board);
-void enumerateRookMoves(MoveList* moveList, Board *board);
-void enumerateBishopMoves(MoveList* moveList, Board *board);
-void enumerateQueenMoves(MoveList* moveList, Board* board);
-void enumeratePawnMoves(MoveList* moveList, Board* board);
+typedef enum : uint8_t {
+    EVASIONS,
+    NON_EVASIONS,
+    CAPTURES,
+    QUIETS
+} GenType;
 
 Bitboard getSquareAttackers(Board* board, Square sq);
 void generateLegalMoves(MoveList* moveList, Board* board);

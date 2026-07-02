@@ -4,50 +4,55 @@
 
 Board getInitialBoard() {
 
-    Board res;
+    Board board;
 
-    res.pieces[WHITE][PAWN]   = 0x000000000000FF00ULL;
-    res.pieces[WHITE][KNIGHT] = 0x0000000000000042ULL;
-    res.pieces[WHITE][BISHOP] = 0x0000000000000024ULL;
-    res.pieces[WHITE][ROOK]   = 0x0000000000000081ULL;
-    res.pieces[WHITE][QUEEN]  = 0x0000000000000008ULL;
-    res.pieces[WHITE][KING]   = 0x0000000000000010ULL;
+    board.pieces[WHITE][PAWN]   = 0x000000000000FF00ULL;
+    board.pieces[WHITE][KNIGHT] = 0x0000000000000042ULL;
+    board.pieces[WHITE][BISHOP] = 0x0000000000000024ULL;
+    board.pieces[WHITE][ROOK]   = 0x0000000000000081ULL;
+    board.pieces[WHITE][QUEEN]  = 0x0000000000000008ULL;
+    board.pieces[WHITE][KING]   = 0x0000000000000010ULL;
 
-    res.pieces[BLACK][PAWN]   = res.pieces[WHITE][PAWN]   << 40;
-    res.pieces[BLACK][KNIGHT] = res.pieces[WHITE][KNIGHT] << 56;
-    res.pieces[BLACK][BISHOP] = res.pieces[WHITE][BISHOP] << 56;
-    res.pieces[BLACK][ROOK]   = res.pieces[WHITE][ROOK]   << 56;
-    res.pieces[BLACK][QUEEN]  = res.pieces[WHITE][QUEEN]  << 56;
-    res.pieces[BLACK][KING]   = res.pieces[WHITE][KING]   << 56;
+    board.pieces[BLACK][PAWN]   = board.pieces[WHITE][PAWN]   << 40;
+    board.pieces[BLACK][KNIGHT] = board.pieces[WHITE][KNIGHT] << 56;
+    board.pieces[BLACK][BISHOP] = board.pieces[WHITE][BISHOP] << 56;
+    board.pieces[BLACK][ROOK]   = board.pieces[WHITE][ROOK]   << 56;
+    board.pieces[BLACK][QUEEN]  = board.pieces[WHITE][QUEEN]  << 56;
+    board.pieces[BLACK][KING]   = board.pieces[WHITE][KING]   << 56;
 
-    res.occ[WHITE] = res.occ[BLACK] = res.occ[BOTH] = 0ULL;
+    updateOcc(&board);
 
-    for (int p = 0; p < PIECE_COUNT; ++p) {
-        res.occ[WHITE] |= res.pieces[WHITE][p];
-        res.occ[BLACK] |= res.pieces[BLACK][p];
-    }
+    board.sideToMove = WHITE;
+    board.castlingRight = 0b1111;
+    board.enPassantSq = NONE;
 
-    res.occ[BOTH] = res.occ[WHITE] | res.occ[BLACK];
+    board.checkMask = 0ULL;
+    board.checkers = 0ULL;
+    board.pinned = 0ULL;
 
-    res.sideToMove = WHITE;
-    res.castlingRight = 0b1111;
-    res.enPassantSq = NONE;
-    res.halfMoveClock = res.fullMoveClock = 0;
+    board.halfMoveClock = board.fullMoveClock = 0;
 
-    return res;
+    return board;
 }
 
 Board getZeroBoard() {
+
     Board board;
 
     for (Piece p = 0; p < 6; ++p) {
         board.pieces[WHITE][p] = 0ULL;
         board.pieces[BLACK][p] = 0ULL;
     }
-    updateOcc(&board);
+    board.occ[BOTH] = board.occ[WHITE] = board.occ[BLACK] = 0ULL;
+
     board.sideToMove = 0;
     board.castlingRight = 0;
     board.enPassantSq = NONE;
+
+    board.checkMask = 0ULL;
+    board.checkers = 0ULL;
+    board.pinned = 0ULL;
+
     board.halfMoveClock = 0;
     board.fullMoveClock = 0;
 
@@ -129,17 +134,21 @@ Board getBoardFromFen(const char* FEN) {
     board.fullMoveClock = atoi(FEN);
 
     updateOcc(&board);
+    updateCheckInfo(&board);
     return board;
 }
 
-void updateOcc(Board* b) {
-    b->occ[WHITE] = b->occ[BLACK] = b->occ[BOTH] = 0ULL;
+void updateOcc(Board* board) {
+    board->occ[WHITE] = board->occ[BLACK] = 0ULL;
 
     for (int p = 0; p < PIECE_COUNT; ++p) {
-        b->occ[WHITE] |= b->pieces[WHITE][p];
-        b->occ[BLACK] |= b->pieces[BLACK][p];
+        board->occ[WHITE] |= board->pieces[WHITE][p];
+        board->occ[BLACK] |= board->pieces[BLACK][p];
     }
 
-    b->occ[BOTH] = b->occ[WHITE] | b->occ[BLACK];
+    board->occ[BOTH] = board->occ[WHITE] | board->occ[BLACK];
 }
 
+void updateCheckInfo(Board* board) {
+    
+}

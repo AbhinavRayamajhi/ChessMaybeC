@@ -1,266 +1,197 @@
 #include "MoveGen.h"
 
-Bitboard getRookAttacks(Bitboard occ, int sq) {
+#include <assert.h>
 
-    Bitboard rookMask = rookTable[sq];
-    uint64_t index = ((rookMask & occ) * ROOK_MAGICS[sq]) >> (64 - popCount(rookMask));
-    return rookAttackTable[sq][index];
-}
+void pruneAttacks(Board* board, Bitboard* attacks, GenType genType) {
 
-Bitboard getBishopAttacks(Bitboard occ, int sq) {
+    if (genType == CAPTURES) {
 
-    Bitboard bishopMask = bishopTable[sq];
-    uint64_t index = ((bishopMask & occ) * BISHOP_MAGICS[sq]) >> (64 - popCount(bishopMask));
-    return bishopAttackTable[sq][index];
-}
-
-void enumerateKnightMoves(MoveList* moveList, Board* board) {
-
-    Bitboard knights = board->sideToMove ? board->pieces[BLACK][KNIGHT] : board->pieces[WHITE][KNIGHT];
-    Bitboard friends = board->sideToMove ? board->occ[BLACK] : board->occ[WHITE];
-
-    while(knights) {
-
-        Square start = getLSB(knights);
-        clearLSB(knights);
-
-        Bitboard attacks = knightTable[start] & ~friends;
+        Bitboard enemy = board->occ[!board->sideToMove];
+        *attacks &= enemy;
+    }
+    else if (genType == QUIETS) {
         
-        while(attacks) {
+        Bitboard occ = board->occ[BOTH];
+        *attacks &= ~occ;
+    }
+    else if (genType == EVASIONS) {
 
-            Square target = getLSB(attacks);
+        *attacks &= board->checkMask;
+    }
+    else if (genType == NON_EVASIONS) {
+
+        Bitboard friends = board->occ[board->sideToMove];
+        *attacks &= ~friends;
+    }
+}
+
+void createNormals(MoveList* moveList, Board* board, Square start, Bitboard attacks, GenType genType) {
+
+    pruneAttacks(board, attacks, genType);
+    
+    while (attacks) {
+
+        Square target = getLSB(attacks);
+        clearLSB(attacks);
+        addMove(moveList, create(start, target, NO_PROMOTION_PIECE, NORMAL));
+    }
+}
+
+void createPromotions(MoveList* moveList, Board* board, Square start, Bitboard attacks, GenType genType, int isAttack) {
+
+    pruneAttacks(board, attacks, genType);
+
+    while (attacks) {
+
+        Square target = getLSB(attacks);
+        clearLS(target);
+
+        if (isAttack) {
+
+            addMove(moveList, create(start, target, QUEEN, PROMOTION));
+            addMove(moveList, create(start, target, ROOK, PROMOTION));
+            addMove(moveList, create(start, target, KNIGHT, PROMOTION));
+            addMove(moveList, create(start, target, BISHOP, PROMOTION));
+        }
+        // Queen promotions are so good that we want to evaluate them with captures even if not an attacking move
+        else if (!isAttack) {
+
+            if (genType != QUIETS) {
+                addMove(moveList, create(start, target, QUEEN, PROMOTION));
+            }
+            if (genType != CAPTURES) {
+                addMove(moveList, create(start, target, ROOK, PROMOTION));
+                addMove(moveList, create(start, target, KNIGHT, PROMOTION));
+                addMove(moveList, create(start, target, BISHOP, PROMOTION));
+            }
+        }
+    }
+}
+
+void enumeratePawnMoves(MoveList* moveList, Board* board, GenType genType) {
+
+    Color side = board->sideToMove;
+
+    Bitboard rank7 = side == WHITE ? RANK_7 : RANK_2;
+    Bitboard pawns = board->pieces[side][PAWN];
+
+    Bitboard pawnsOn7 = pawns & rank7;
+    Bitboard pawnsNotOn7 = pawns & ~rank7;
+
+    Bitboard occ = board->pieces[BOTH];
+
+    // promotions
+    while (pawnsOn7) {
+
+        Square start = getLSB(pawnsOn7);
+        clearLSB(pawnsOn7);
+        
+        Bitboard pushTarget = 1ULL << (start + (side == WHITE ? 8 : -8));
+        createPromotions(moveList, board, start, pushTarget, genType, 0);
+
+        Bitboard attacks = pawnAttackTable[side * 64 + start];
+        createPromotions(moveList, board, start, attacks, genType, 1);
+    }
+    // regular push and attacks
+    while (pawnsNotOn7) {
+
+        Square start = getLSB(pawnsNotOn7);
+        clearLSB(pawnsNotOn7);
+        Bitboard attacks = pawnAttackTable[side * 64 + start];
+
+        createNormals(moveList, board, start, attacks, genType);
+    }
+    // en passant
+    if (board->enPassantSq != NONE) {
+
+        Square target = board->enPassantSq;
+        Bitboard attacks = pawns & pawnAttackTable[!side * 64 + target]; // attacks from ep sq anded with our pawns
+
+        while (attacks) {
+
+            Square start = getLSB(attacks);
             clearLSB(attacks);
 
-            addMove(moveList, make(start, target, NO_PROMOTION_PIECE, NORMAL));
+            addMove(moveList, create(start, target, NO_PROMOTION_PIECE, EN_PASSANT));
         }
     }
 }
 
 void enumerateKingMoves(MoveList* moveList, Board* board) {
-    Bitboard king = board->sideToMove ? board->pieces[BLACK][KING] : board->pieces[WHITE][KING];
-    Bitboard friends = board->sideToMove ? board->occ[BLACK] : board->occ[WHITE];
+
+    Bitboard king = board->pieces[board->sideToMove][KING];
+    Bitboard friends = board->occ[board->sideToMove];
 
     Square start = getLSB(king);
     Bitboard attacks = kingTable[start] & ~friends;
+
+    // need to figure out a way to prune king attacks
 
     while (attacks) {
 
         Square target = getLSB(attacks);
         clearLSB(attacks);
 
-        addMove(moveList, make(start, target, NO_PROMOTION_PIECE, NORMAL));
-    }
-
-    // TODO: Square check required to add castling moves
-
-    if (!board->sideToMove && (board->castlingRight & WHITE_CASTLING)) {
-
-        if((board->castlingRight & WHITE_KINGSIDE) && !(board->occ[BOTH] & WHITE_OO)) {
-
-            addMove(moveList, make(E1, G1, NO_PROMOTION_PIECE, CASTLING));
-        }
-        if((board->castlingRight & WHITE_QUEENSIDE) && !(board->occ[BOTH] & WHITE_OOO)) {
-
-            addMove(moveList, make(E1, C1, NO_PROMOTION_PIECE, CASTLING));
-        }
-    }
-    else if(board->sideToMove && (board->castlingRight & BLACK_CASTLING)) {
-
-        if((board->castlingRight & BLACK_KINGSIDE) && !(board->occ[BOTH] & BLACK_OO)) {
-
-            addMove(moveList, make(E8, G8, NO_PROMOTION_PIECE, CASTLING));
-        }
-        if((board->castlingRight & BLACK_QUEENSIDE) && !(board->occ[BOTH] & BLACK_OOO)) {
-
-            addMove(moveList, make(E8, C8, NO_PROMOTION_PIECE, CASTLING));
-        }
+        addMove(moveList, create(start, target, NO_PROMOTION_PIECE, NORMAL));
     }
 }
 
-void enumerateRookMoves(MoveList* moveList, Board* board) {
+void enumerateCastlings(MoveList* moveList, Board* board) {
+    
+}
 
-    Bitboard rooks = board->sideToMove ? board->pieces[BLACK][ROOK] : board->pieces[WHITE][ROOK];
-    Bitboard friends = board->sideToMove ? board->occ[BLACK] : board->occ[WHITE];
+void enumerateKnightMoves(MoveList* moveList, Board* board, GenType genType) {
+
+    Bitboard knights = board->pieces[board->sideToMove][KNIGHT];
+
+    while(knights) {
+
+        Square start = getLSB(knights);
+        clearLSB(knights);
+
+        Bitboard attacks = knightTable[start];
+        createNormals(moveList, board, start, attacks, genType);
+    }
+}
+
+void enumerateRookMoves(MoveList* moveList, Board* board, GenType genType) {
+
+    Bitboard rooks = board->pieces[board->sideToMove][ROOK];
 
     while(rooks) {
 
         Square start = getLSB(rooks);
         clearLSB(rooks);
 
-        Bitboard attacks = getRookAttacks(board->occ[BOTH], start) & ~friends;
-        
-        while(attacks) {
-
-            Square target = getLSB(attacks);
-            clearLSB(attacks);
-
-            addMove(moveList, make(start, target, NO_PROMOTION_PIECE, NORMAL));
-        }
+        Bitboard attacks = getRookAttacks(board->occ[BOTH], start);
+        createNormals(moveList, board, start, attacks, genType);
     }
 }
 
-void enumerateBishopMoves(MoveList* moveList, Board* board) {
+void enumerateBishopMoves(MoveList* moveList, Board* board, GenType genType) {
     
-    Bitboard bishops = board->sideToMove ? board->pieces[BLACK][BISHOP] : board->pieces[WHITE][BISHOP];
-    Bitboard friends = board->sideToMove ? board->occ[BLACK] : board->occ[WHITE];
+    Bitboard bishops = board->pieces[board->sideToMove][BISHOP];
 
     while(bishops) {
 
         Square start = getLSB(bishops);
         clearLSB(bishops);
 
-        Bitboard attacks = getBishopAttacks(board->occ[BOTH], start) & ~friends;
-        
-        while(attacks) {
-
-            Square target = getLSB(attacks);
-            clearLSB(attacks);
-
-            addMove(moveList, make(start, target, NO_PROMOTION_PIECE, NORMAL));
-        }
+        Bitboard attacks = getBishopAttacks(board->occ[BOTH], start);
+        createNormals(moveList, board, start, attacks, genType);
     }
 }
 
-void enumerateQueenMoves(MoveList* moveList, Board* board) {
+void enumerateQueenMoves(MoveList* moveList, Board* board, GenType genType) {
     
-    Bitboard queens = board->sideToMove ? board->pieces[BLACK][QUEEN] : board->pieces[WHITE][QUEEN];
-    Bitboard friends = board->sideToMove ? board->occ[BLACK] : board->occ[WHITE];
-
+    Bitboard queens = board->pieces[board->sideToMove][QUEEN];
     while(queens) {
 
         Square start = getLSB(queens);
         clearLSB(queens);
 
-        Bitboard attacks = (getRookAttacks(board->occ[BOTH], start) | getBishopAttacks(board->occ[BOTH], start)) & ~friends;
-        
-        while(attacks) {
-
-            Square target = getLSB(attacks);
-            clearLSB(attacks);
-
-            addMove(moveList, make(start, target, NO_PROMOTION_PIECE, NORMAL));
-        }
-    }
-}
-
-void enumeratePawnMoves(MoveList* moveList, Board* board) {
-
-    Bitboard pawns = board->sideToMove ? board->pieces[BLACK][PAWN] : board->pieces[WHITE][PAWN];
-    Bitboard enemies = board->sideToMove ? board->occ[WHITE] : board->occ[BLACK];
-
-    Bitboard singlePush = singlePawnPush(pawns, board->sideToMove, board->occ[BOTH]);
-
-    while (singlePush) {
-
-        Square target = getLSB(singlePush);
-        clearLSB(singlePush);
-        Square start = target - (board->sideToMove ? -8 : 8);
-
-        // promotion checks
-        if (!board->sideToMove && target >= 56) {
-
-            addMove(moveList, make(start, target, QUEEN, PROMOTION));
-            addMove(moveList, make(start, target, ROOK, PROMOTION));
-            addMove(moveList, make(start, target, BISHOP, PROMOTION));
-            addMove(moveList, make(start, target, KNIGHT, PROMOTION));
-        }
-        else if (board->sideToMove && target <= 7) {
-
-            addMove(moveList, make(start, target, QUEEN, PROMOTION));
-            addMove(moveList, make(start, target, ROOK, PROMOTION));
-            addMove(moveList, make(start, target, BISHOP, PROMOTION));
-            addMove(moveList, make(start, target, KNIGHT, PROMOTION));
-        }
-        else {
-
-            addMove(moveList, make(start, target, NO_PROMOTION_PIECE, NORMAL));
-        }
-    }
-
-    Bitboard doublePush = doublePawnPush(pawns, board->sideToMove, board->occ[BOTH]);
-
-    while (doublePush) {
-
-        Square target = getLSB(doublePush);
-        clearLSB(doublePush);
-        Square start = target - (board->sideToMove ? -16 : 16);
-
-        addMove(moveList, make(start, target, NO_PROMOTION_PIECE, NORMAL));
-    }
-
-    Bitboard leftAttacks = pawnLeftAttack(pawns, board->sideToMove) & enemies;
-
-    while (leftAttacks) {
-
-        Square target = getLSB(leftAttacks);
-        clearLSB(leftAttacks);
-        Square start = target - (board->sideToMove ? -9 : 7);
-
-         // promotion checks
-        if (!board->sideToMove && target >= 56) {
-
-            addMove(moveList, make(start, target, QUEEN, PROMOTION));
-            addMove(moveList, make(start, target, ROOK, PROMOTION));
-            addMove(moveList, make(start, target, BISHOP, PROMOTION));
-            addMove(moveList, make(start, target, KNIGHT, PROMOTION));
-        }
-        else if (board->sideToMove && target <= 7) {
-
-            addMove(moveList, make(start, target, QUEEN, PROMOTION));
-            addMove(moveList, make(start, target, ROOK, PROMOTION));
-            addMove(moveList, make(start, target, BISHOP, PROMOTION));
-            addMove(moveList, make(start, target, KNIGHT, PROMOTION));
-        }
-        else {
-
-            addMove(moveList, make(start, target, NO_PROMOTION_PIECE, NORMAL));
-        }
-    }
-
-    Bitboard rightAttacks = pawnRightAttack(pawns, board->sideToMove) & enemies;
-
-    while (rightAttacks) {
-
-        Square target = getLSB(rightAttacks);
-        clearLSB(rightAttacks);
-        Square start = target - (board->sideToMove ? -7 : 9);
-
-         // promotion checks
-        if (!board->sideToMove && target >= 56) {
-
-            addMove(moveList, make(start, target, QUEEN, PROMOTION));
-            addMove(moveList, make(start, target, ROOK, PROMOTION));
-            addMove(moveList, make(start, target, BISHOP, PROMOTION));
-            addMove(moveList, make(start, target, KNIGHT, PROMOTION));
-        }
-        else if (board->sideToMove && target <= 7) {
-
-            addMove(moveList, make(start, target, QUEEN, PROMOTION));
-            addMove(moveList, make(start, target, ROOK, PROMOTION));
-            addMove(moveList, make(start, target, BISHOP, PROMOTION));
-            addMove(moveList, make(start, target, KNIGHT, PROMOTION));
-        }
-        else {
-
-            addMove(moveList, make(start, target, NO_PROMOTION_PIECE, NORMAL));
-        }
-    }
-
-    if (board->enPassantSq != NONE) {
-
-        Bitboard enPassant = 0ULL;
-        setSq(enPassant, board->enPassantSq);
-
-        if (pawnLeftAttack(pawns, board->sideToMove) & enPassant) {
-
-            Square start = board->enPassantSq + (board->sideToMove ? 9 : -7);
-            addMove(moveList, make(start, board->enPassantSq, NO_PROMOTION_PIECE, EN_PASSANT));
-        }
-        if (pawnRightAttack(pawns, board->sideToMove) & enPassant) {
-
-            Square start = board->enPassantSq + (board->sideToMove ? 7 : -9);
-            addMove(moveList, make(start, board->enPassantSq, NO_PROMOTION_PIECE, EN_PASSANT));
-        }
+        Bitboard attacks = (getRookAttacks(board->occ[BOTH], start) | getBishopAttacks(board->occ[BOTH], start));
+        createNormals(moveList, board, start, attacks, genType);
     }
 }
 
