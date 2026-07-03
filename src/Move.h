@@ -1,6 +1,7 @@
 #ifndef MOVE_H
 #define MOVE_H
 
+#include <stdio.h>
 #include <stdint.h>
 #include "Types.h"
 
@@ -30,6 +31,11 @@ static inline void addMove(MoveList* moveList, Move m) {
 
     moveList->moveArray[moveList->end] = m;
     ++moveList->end;
+}
+
+static inline void removeMove(MoveList* moveList, int index) {
+
+    moveList->moveArray[index] = moveList->moveArray[--moveList->end];
 }
 
 static inline char rankFromSquare(Square sq) {

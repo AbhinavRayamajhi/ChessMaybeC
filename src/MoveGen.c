@@ -1,5 +1,12 @@
 #include "MoveGen.h"
 
+#include "Bitboard.h"
+#include "Board.h"
+#include "Magic.h"
+#include "MaskGen.h"
+#include "Move.h"
+#include "Position.h"
+
 #include <assert.h>
 
 void pruneAttacks(Board* board, Bitboard* attacks, GenType genType) {
@@ -27,7 +34,7 @@ void pruneAttacks(Board* board, Bitboard* attacks, GenType genType) {
 
 void createNormals(MoveList* moveList, Board* board, Square start, Bitboard attacks, GenType genType) {
 
-    pruneAttacks(board, attacks, genType);
+    pruneAttacks(board, &attacks, genType);
     
     while (attacks) {
 
@@ -39,12 +46,12 @@ void createNormals(MoveList* moveList, Board* board, Square start, Bitboard atta
 
 void createPromotions(MoveList* moveList, Board* board, Square start, Bitboard attacks, GenType genType, int isAttack) {
 
-    pruneAttacks(board, attacks, genType);
+    pruneAttacks(board, &attacks, genType);
 
     while (attacks) {
 
         Square target = getLSB(attacks);
-        clearLS(target);
+        clearLSB(target);
 
         if (isAttack) {
 
@@ -78,15 +85,13 @@ void enumeratePawnMoves(MoveList* moveList, Board* board, GenType genType) {
     Bitboard pawnsOn7 = pawns & rank7;
     Bitboard pawnsNotOn7 = pawns & ~rank7;
 
-    Bitboard occ = board->pieces[BOTH];
-
     // promotions
     while (pawnsOn7) {
 
         Square start = getLSB(pawnsOn7);
         clearLSB(pawnsOn7);
         
-        Bitboard pushTarget = 1ULL << (start + (side == WHITE ? 8 : -8));
+        Bitboard pushTarget = boardFromSq(start + (side == WHITE ? 8 : -8));
         createPromotions(moveList, board, start, pushTarget, genType, 0);
 
         Bitboard attacks = pawnAttackTable[side * 64 + start];
@@ -125,19 +130,44 @@ void enumerateKingMoves(MoveList* moveList, Board* board) {
     Square start = getLSB(king);
     Bitboard attacks = kingTable[start] & ~friends;
 
-    // need to figure out a way to prune king attacks
+    // need to figure out a way to prune king attacks to avoid checked sqs
 
     while (attacks) {
 
         Square target = getLSB(attacks);
         clearLSB(attacks);
 
-        addMove(moveList, create(start, target, NO_PROMOTION_PIECE, NORMAL));
+        // only add move if target not attacked
+        if (!getSquareAttackers(board, target, board->sideToMove)) {
+            addMove(moveList, create(start, target, NO_PROMOTION_PIECE, NORMAL));
+        }
     }
 }
 
 void enumerateCastlings(MoveList* moveList, Board* board) {
-    
+
+    if (board->sideToMove == WHITE && (board->castlingRight & WHITE_CASTLING)) {
+
+        CastlingRights cr = getCR(board, WHITE);
+
+        if (cr & WHITE_KINGSIDE) {
+            addMove(moveList, create(E1, G1, NO_PROMOTION_PIECE, CASTLING));
+        }
+        if (cr & WHITE_QUEENSIDE) {
+            addMove(moveList, create(E1, C1, NO_PROMOTION_PIECE, CASTLING));
+        }
+    }
+    else if(board->sideToMove == BLACK && (board->castlingRight & BLACK_CASTLING)) {
+
+        CastlingRights cr = getCR(board, BLACK);
+
+        if (cr & BLACK_KINGSIDE) {
+            addMove(moveList, create(E8, G8, NO_PROMOTION_PIECE, CASTLING));
+        }
+        if (cr & BLACK_QUEENSIDE) {
+            addMove(moveList, create(E8, C8, NO_PROMOTION_PIECE, CASTLING));
+        }
+    }
 }
 
 void enumerateKnightMoves(MoveList* moveList, Board* board, GenType genType) {
@@ -195,78 +225,44 @@ void enumerateQueenMoves(MoveList* moveList, Board* board, GenType genType) {
     }
 }
 
-Bitboard getSquareAttackers(Board* board, Square sq) {
-
-    Bitboard attackers = 0ULL;
-    Bitboard self = 1ULL << sq;
-
-    attackers |= board->pieces[board->sideToMove][PAWN] & (pawnLeftAttack(self, !board->sideToMove)
-        | pawnRightAttack(self, !board->sideToMove));
-    attackers |= board->pieces[board->sideToMove][KNIGHT] & knightTable[sq];
-    attackers |= (board->pieces[board->sideToMove][BISHOP] | board->pieces[board->sideToMove][QUEEN])
-        & getBishopAttacks(board->occ[BOTH], sq);
-    attackers |= (board->pieces[board->sideToMove][ROOK] | board->pieces[board->sideToMove][QUEEN])
-        & getRookAttacks(board->occ[BOTH], sq);
-    attackers |= board->pieces[board->sideToMove][KING] & kingTable[sq];
-
-    return attackers;
-}
-
 void generateLegalMoves(MoveList* moveList, Board* board) {
 
-    enumeratePawnMoves(moveList, board);
-    enumerateKnightMoves(moveList, board);
-    enumerateBishopMoves(moveList, board);
-    enumerateRookMoves(moveList, board);
-    enumerateQueenMoves(moveList, board);
-    enumerateKingMoves(moveList, board);
+    updateCheckInfo(board);
     
-    for (int moveInd = 0; moveInd < moveList->end; moveInd++) {
+    enumerateKingMoves(moveList, board);
 
-        History h;
+    if (popCount(board->checkers) == 1) {
+
+        enumeratePawnMoves(moveList, board, EVASIONS);
+        enumerateBishopMoves(moveList, board, EVASIONS);
+        enumerateKnightMoves(moveList, board, EVASIONS);
+        enumerateRookMoves(moveList, board, EVASIONS);
+        enumerateQueenMoves(moveList, board, EVASIONS);
+    }
+    else if (popCount(board->checkers) == 0) {
         
+        enumeratePawnMoves(moveList, board, NON_EVASIONS);
+        enumerateCastlings(moveList, board);
+        enumerateBishopMoves(moveList, board, NON_EVASIONS);
+        enumerateKnightMoves(moveList, board, NON_EVASIONS);
+        enumerateRookMoves(moveList, board, NON_EVASIONS);
+        enumerateQueenMoves(moveList, board, NON_EVASIONS);
+    }
 
-        makeMove(board, &h, moveList->moveArray[moveInd]);
+    // pinned pieces can only move in ray between attacker and king
+    for (int i = 0; i < moveList->end; ++i) {
 
-        if (getSquareAttackers(board, getLSB(board->pieces[!board->sideToMove][KING]))) {
-            moveList->moveArray[moveInd] = moveList->moveArray[moveList->end - 1];
-            --moveList->end;
-            --moveInd;
-        }
+        Square start = getStartSq(moveList->moveArray[i]);
+        if (board->pinned & boardFromSq(start)) {
 
-        else if (getMoveType(moveList->moveArray[moveInd]) == CASTLING) {
+            Square target = getTargetSq(moveList->moveArray[i]);
+            Square pinnerSq = board->pinners[start];
+            Square kSq = board->pieces[board->sideToMove][KING];
 
-            Bitboard castleChecks = 0ULL;
-            Square target = getTargetSq(moveList->moveArray[moveInd]);
-
-            if (board->sideToMove) {
-
-                if (target == G1) {
-                    castleChecks = getSquareAttackers(board, E1) | getSquareAttackers(board, F1);
-                }
-
-                else if (target == C1) {
-                    castleChecks = getSquareAttackers(board, E1) | getSquareAttackers(board, D1);
-                }
-            }
-            
-            else {
-                
-                if (target == G8) {
-                    castleChecks = getSquareAttackers(board, E8) | getSquareAttackers(board, F8);
-                }
-                else if (target == C8) {
-                    castleChecks = getSquareAttackers(board, E8) | getSquareAttackers(board, D8);
-                }
-            }
-
-            if (castleChecks) {
-                moveList->moveArray[moveInd] = moveList->moveArray[moveList->end - 1];
-                --moveList->end;
-                --moveInd;
+            if (!(boardFromSq(target) & rays[kSq][pinnerSq])) {
+                removeMove(moveList, i);
+                --i;
             }
         }
-
-        unmakeMove(board, &h);
     }
 }

@@ -2,12 +2,9 @@
 #define MOVE_GEN_H
 
 #include <stdlib.h>
-#include "Bitboard.h"
+#include "Types.h"
 #include "Board.h"
-#include "Magic.h"
-#include "MaskGen.h"
 #include "Move.h"
-#include "Position.h"
 
 typedef enum : uint8_t {
     EVASIONS,
@@ -16,7 +13,6 @@ typedef enum : uint8_t {
     QUIETS
 } GenType;
 
-Bitboard getSquareAttackers(Board* board, Square sq);
 void generateLegalMoves(MoveList* moveList, Board* board);
 
 #endif

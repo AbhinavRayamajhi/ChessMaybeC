@@ -1,5 +1,7 @@
 #include "Search.h"
 
+#include "Position.h"
+
 const int materialVal[] = { 100, 320, 330, 500, 900 };
 
 int evaluate(const Board* board) {

@@ -1,5 +1,15 @@
 #include "Test.h"
 
+#include <stdlib.h>
+#include <sys/time.h>
+
+#include "Bitboard.h"
+#include "Types.h"
+#include "MaskGen.h"
+#include "Magic.h"
+#include "MoveGen.h"
+#include "Position.h"
+
 void runAllTableTests() {
     printf("%s\n", "Starting Table Tests...");
     KnightTableTest();

@@ -2,7 +2,10 @@
 #define MAGIC_H
 
 #include <stdlib.h>
+
 #include "Types.h"
+#include "Bitboard.h"
+#include "MaskGen.h"
 
 Bitboard rookAttacksForBlockers(Bitboard blockers, int sq);
 Bitboard bishopAttacksForBlockers(Bitboard blockers, int sq);
@@ -143,14 +146,14 @@ static const uint64_t BISHOP_MAGICS[] = {
     0x208101508090010ULL
 };
 
-static Bitboard getRookAttacks(Bitboard occ, int sq) {
+static inline Bitboard getRookAttacks(Bitboard occ, int sq) {
 
     Bitboard rookMask = rookTable[sq];
     uint64_t index = ((rookMask & occ) * ROOK_MAGICS[sq]) >> (64 - popCount(rookMask));
     return rookAttackTable[sq][index];
 }
 
-static Bitboard getBishopAttacks(Bitboard occ, int sq) {
+static inline Bitboard getBishopAttacks(Bitboard occ, int sq) {
 
     Bitboard bishopMask = bishopTable[sq];
     uint64_t index = ((bishopMask & occ) * BISHOP_MAGICS[sq]) >> (64 - popCount(bishopMask));

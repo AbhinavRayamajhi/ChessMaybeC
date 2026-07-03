@@ -2,18 +2,19 @@
 
 #include "Bitboard.h"
 
-Bitboard knightTable[64];
-Bitboard pawnAttackTable[128];
-Bitboard kingTable[64];
+Bitboard knightTable[SQ_COUNT];
+Bitboard pawnAttackTable[SQ_COUNT * 2];
+Bitboard kingTable[SQ_COUNT];
 
-Bitboard rookTable[64];
-Bitboard bishopTable[64];
-Bitboard rookAttackTable[64][4096];
-Bitboard bishopAttackTable[64][512];
+Bitboard rookTable[SQ_COUNT];
+Bitboard bishopTable[SQ_COUNT];
+Bitboard rookAttackTable[SQ_COUNT][4096];
+Bitboard bishopAttackTable[SQ_COUNT][512];
+Bitboard rays[SQ_COUNT][SQ_COUNT];
 
 void generateKnightMasks() {    
     // Knight attack offsets: +6, +10, +15, +17, -6, -10, -15, -17)
-    for (int sq = 0; sq < 64; ++sq) {
+    for (Square sq = A1; sq != NONE; ++sq) {
 
         Bitboard mask = 0ULL;
         Bitboard cur = 0ULL;
@@ -58,7 +59,7 @@ void generatePawnAttackMasks() {
 
 void generateKingMasks() {
 
-    for (int sq = 0; sq < 64; ++sq) {
+    for (Square sq = 0; sq != NONE; ++sq) {
 
         Bitboard mask = 0ULL;
         Bitboard cur = 0ULL;
@@ -81,7 +82,7 @@ void generateKingMasks() {
 
 void generateRookMasks() {
 
-    for (int sq = 0; sq < 64; ++sq) {
+    for (Square sq = 0; sq != NONE; ++sq) {
 
         Bitboard mask = 0ULL;
         
@@ -98,7 +99,7 @@ void generateRookMasks() {
 
 void generateBishopMasks() {
 
-    for (int sq = 0; sq < 64; ++sq) {
+    for (Square sq = 0; sq != NONE; ++sq) {
 
         Bitboard mask = 0ULL;
 
@@ -116,12 +117,60 @@ void generateBishopMasks() {
     }
 }
 
+Bitboard computeRay(Square sq, Direction dir) {
+
+	Bitboard res = 0ULL;
+	Bitboard cur = boardFromSq(sq);
+
+	while ((cur = bitboardShift(cur, dir))) {
+		res |= cur;
+	}
+
+	return res;
+}
+
+Bitboard getRays(Square sq1, Square sq2) {
+
+	int rankDiff = (sq2 / 8) - (sq1 / 8);
+	int fileDiff = (sq2 % 8) - (sq1 % 8);
+
+	if (fileDiff == 0) {
+		if (rankDiff > 0) return computeRay(sq1, NORTH) & computeRay(sq2, SOUTH);
+		if (rankDiff < 0) return computeRay(sq1, SOUTH) & computeRay(sq2, NORTH);
+	}
+
+	if (rankDiff == 0) {
+		if (fileDiff > 0) return computeRay(sq1, EAST) & computeRay(sq2, WEST);
+		if (fileDiff < 0) return computeRay(sq1, WEST) &  computeRay(sq2, EAST);
+	}
+
+	if (rankDiff == fileDiff) {
+		if (rankDiff > 0) return computeRay(sq1, NORTH_EAST) & computeRay(sq2, SOUTH_WEST);
+		if (rankDiff < 0) return computeRay(sq1, SOUTH_WEST) & computeRay(sq2, NORTH_EAST);
+	}
+	
+	if (rankDiff == -fileDiff) {
+		if (rankDiff > 0) return computeRay(sq1, NORTH_WEST) & computeRay(sq2, SOUTH_EAST);
+		if (rankDiff < 0) return  computeRay(sq1, SOUTH_EAST) & computeRay(sq2, NORTH_WEST);
+    }
+    
+    return 0ULL;
+}
+
+void generateRays() {
+
+    for (Square sq = 0; sq != NONE; ++sq) {
+        
+    }
+}
+
 void initMasks() {
     generateKnightMasks();
     generatePawnAttackMasks();
     generateKingMasks();
     generateRookMasks();
     generateBishopMasks();
+    generateRays();
 }
 
 Bitboard singlePawnPush(Bitboard pawns, Color sideToMove, Bitboard occ) {

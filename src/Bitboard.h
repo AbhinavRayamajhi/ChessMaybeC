@@ -15,6 +15,11 @@
 #define getLSB(bb) __builtin_ctzll(bb)
 #define popCount(bb) __builtin_popcountll(bb)
 
+static inline Bitboard boardFromSq(Square sq) {
+
+    return 1ULL << sq;
+}
+
 static inline Bitboard bitboardShift(Bitboard bb, Direction dir) {
 
     switch(dir) {

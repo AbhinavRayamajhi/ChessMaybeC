@@ -1,6 +1,8 @@
 #include "Board.h"
 
 #include "Bitboard.h"
+#include "MaskGen.h"
+#include "Magic.h"
 
 Board getInitialBoard() {
 
@@ -21,6 +23,10 @@ Board getInitialBoard() {
     board.pieces[BLACK][KING]   = board.pieces[WHITE][KING]   << 56;
 
     updateOcc(&board);
+
+    for (Square sq = A1; sq != NONE; ++sq) {
+        board.pinners[sq] = 0ULL;
+    }
 
     board.sideToMove = WHITE;
     board.castlingRight = 0b1111;
@@ -43,7 +49,12 @@ Board getZeroBoard() {
         board.pieces[WHITE][p] = 0ULL;
         board.pieces[BLACK][p] = 0ULL;
     }
+
     board.occ[BOTH] = board.occ[WHITE] = board.occ[BLACK] = 0ULL;
+
+    for (Square sq = A1; sq != NONE; ++sq) {
+        board.pinners[sq] = 0ULL;
+    }
 
     board.sideToMove = 0;
     board.castlingRight = 0;
@@ -138,6 +149,14 @@ Board getBoardFromFen(const char* FEN) {
     return board;
 }
 
+void moveP(Board* board, Square start, Square target, Piece p, Color side) {
+
+    Bitboard movement = 1ULL << start | 1ULL << target;
+    board->pieces[side][p] ^= movement;
+    board->occ[side] ^= movement;
+    board->occ[BOTH] ^= movement;
+}
+
 void updateOcc(Board* board) {
     board->occ[WHITE] = board->occ[BLACK] = 0ULL;
 
@@ -150,5 +169,115 @@ void updateOcc(Board* board) {
 }
 
 void updateCheckInfo(Board* board) {
-    
+
+    Color side = board->sideToMove;
+    Square kSq = getLSB(board->pieces[side][KING]);
+    Bitboard occ = board->occ[side];
+
+    for (Square sq = 0; sq != NONE; ++sq) {
+
+        board->pinners[sq] = 0;
+    }
+    board->checkers = getSquareAttackers(board, kSq, side);
+    board->pinned = EMPTY_BOARD;
+    board->checkMask = EMPTY_BOARD;
+
+    Bitboard rookAttacks = getRookAttacks(board->occ[BOTH], kSq);
+    Bitboard bishopAttacks = getBishopAttacks(board->occ[BOTH], kSq);
+
+    // get rid of any friendly piece in the rook rays from king sq and calculate again
+    rookAttacks &= board->occ[side];
+    occ ^= rookAttacks;
+    rookAttacks = getRookAttacks(occ, kSq);
+
+    // find enemy pinners if any
+    rookAttacks &= board->pieces[!side][QUEEN] | board->pieces[!side][ROOK];
+
+    while (rookAttacks) {
+        Square pinSq = getLSB(rookAttacks);
+        clearLSB(rookAttacks);
+        Bitboard curPinned = rays[kSq][pinSq] & board->occ[side];
+        board->pinned |= curPinned;
+        board->pinners[getLSB(curPinned)] = pinSq;
+    }
+
+    occ = board->occ[side];
+
+    // get rid of any friendly piece in the bishop rays from king sq and calculate again
+    bishopAttacks &= board->occ[side];
+    occ ^= bishopAttacks;
+    bishopAttacks = getBishopAttacks(occ, kSq);
+
+    // find enemy pinners if any
+    bishopAttacks &= board->pieces[!side][QUEEN] | board->pieces[!side][BISHOP];
+
+    while (bishopAttacks) {
+        Square pinSq = getLSB(bishopAttacks);
+        clearLSB(bishopAttacks);
+        Bitboard curPinned = rays[kSq][pinSq] & board->occ[side];
+        board->pinned |= curPinned;
+        board->pinners[getLSB(curPinned)] = pinSq;
+    }
+
+    // no checkers no check mask
+    if (!board->checkers) {
+
+        board->checkMask = FULL_BOARD;
+    }
+    // single check
+    else if (popCount(board->checkers) == 1) {
+
+        Square checkerSq = getLSB(board->checkers);
+        Bitboard mask = EMPTY_BOARD;
+        setSq(mask, checkerSq);
+
+        Bitboard enemySliders = board->pieces[!side][QUEEN] | board->pieces[!side][ROOK] | board->pieces[!side][BISHOP];
+        // to allow blocking moves for slider checks, knight attacks will not trigger this so only choice is to capture or move
+        if (mask & enemySliders)
+            mask |= rays[kSq][checkerSq];
+        
+        board->checkMask = mask;
+    }
+    // multiple check only king move so checkmask will be empty
+}
+
+CastlingRights getCR(Board* board, Color side) {
+
+    Bitboard occ = board->occ[BOTH];
+    CastlingRights res = board->castlingRight;
+
+    if (side == WHITE) {
+
+        if (getSquareAttackers(board, F1, WHITE) || getSquareAttackers(board, G1, WHITE) || (1ULL << F1) & occ) {
+            res &= ~WHITE_OO;
+        }
+        if (getSquareAttackers(board, D1, WHITE) || getSquareAttackers(board, C1, WHITE) || (1ULL << D1) & occ) {
+            res &= ~WHITE_OOO;
+        }
+    }
+    else {
+
+        if (getSquareAttackers(board, F8, BLACK) || getSquareAttackers(board, G8, BLACK) || (1ULL << F8) & occ) {
+            res &= ~BLACK_OO;
+        }
+        if (getSquareAttackers(board, D8, BLACK) || getSquareAttackers(board, C8, BLACK) || (1ULL << D8) & occ) {
+            res &= ~BLACK_OOO;
+        }
+    }
+
+    return res;
+}
+
+Bitboard getSquareAttackers(Board* board, Square sq, Color side) {
+
+    Bitboard attackers = 0ULL;
+    Bitboard self = 1ULL << sq;
+
+    attackers |= board->pieces[!side][PAWN] & (pawnLeftAttack(self, side) | pawnRightAttack(self, side));
+    attackers |= board->pieces[!side][KNIGHT] & knightTable[sq];
+    attackers |= (board->pieces[!side][BISHOP] | board->pieces[!side][QUEEN]) & getBishopAttacks(board->occ[BOTH], sq);
+    attackers |= (board->pieces[!side][ROOK] | board->pieces[!side][QUEEN]) & getRookAttacks(board->occ[BOTH], sq);
+    attackers |= board->pieces[!side][KING] & kingTable[sq];
+
+    return attackers;
 }

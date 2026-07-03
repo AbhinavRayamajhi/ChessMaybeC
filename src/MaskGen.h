@@ -7,13 +7,14 @@
 
 #include "Types.h"
 
-extern Bitboard knightTable[64];
-extern Bitboard pawnAttackTable[128];
-extern Bitboard kingTable[64];
-extern Bitboard rookTable[64];
-extern Bitboard bishopTable[64];
-extern Bitboard rookAttackTable[64][4096];
-extern Bitboard bishopAttackTable[64][512];
+extern Bitboard knightTable[SQ_COUNT];
+extern Bitboard pawnAttackTable[SQ_COUNT * 2];
+extern Bitboard kingTable[SQ_COUNT];
+extern Bitboard rookTable[SQ_COUNT];
+extern Bitboard bishopTable[SQ_COUNT];
+extern Bitboard rookAttackTable[SQ_COUNT][4096];
+extern Bitboard bishopAttackTable[SQ_COUNT][512];
+extern Bitboard rays[SQ_COUNT][SQ_COUNT];
 
 void generateKnightMasks();
 void generatePawnAttackMasks();

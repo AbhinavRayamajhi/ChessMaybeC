@@ -8,6 +8,9 @@
 
 #define Bitboard uint64_t
 
+#define FULL_BOARD 0xFFFFFFFFFFFFFFFF;
+#define EMPTY_BOARD 0ULL;
+
 #define FILE_A 0x0101010101010101
 #define FILE_B 0x0202020202020202
 #define FILE_C 0x0404040404040404
@@ -79,7 +82,7 @@ typedef enum : uint8_t {
 	    A6, B6, C6, D6, E6, F6, G6, H6,
 	    A7, B7, C7, D7, E7, F7, G7, H7,
 	    A8, B8, C8, D8, E8, F8, G8, H8,
-		NONE
+		NONE, SQ_COUNT = NONE,
 } Square;
 
 typedef enum : uint8_t {
