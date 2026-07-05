@@ -7,8 +7,6 @@
 #include "Move.h"
 #include "Position.h"
 
-#include <assert.h>
-
 void pruneAttacks(Board* board, Bitboard* attacks, GenType genType) {
 
     if (genType == CAPTURES) {
@@ -40,6 +38,7 @@ void createNormals(MoveList* moveList, Board* board, Square start, Bitboard atta
 
         Square target = getLSB(attacks);
         clearLSB(attacks);
+
         addMove(moveList, create(start, target, NO_PROMOTION_PIECE, NORMAL));
     }
 }
@@ -51,7 +50,7 @@ void createPromotions(MoveList* moveList, Board* board, Square start, Bitboard a
     while (attacks) {
 
         Square target = getLSB(attacks);
-        clearLSB(target);
+        clearLSB(attacks);
 
         if (isAttack) {
 
@@ -75,6 +74,21 @@ void createPromotions(MoveList* moveList, Board* board, Square start, Bitboard a
     }
 }
 
+void createPawnPushes(MoveList* moveList, Board* board, Bitboard attacks, int isDouble) {
+
+    while (attacks) {
+
+        Square target = getLSB(attacks);
+        clearLSB(attacks);
+
+        Square start;
+        if (isDouble) start = target - (board->sideToMove == WHITE ? 16 : -16);
+        else start = target - (board->sideToMove == WHITE ? 8 : -8);
+
+        addMove(moveList, create(start, target, NO_PROMOTION_PIECE, NORMAL));
+    }
+}
+
 void enumeratePawnMoves(MoveList* moveList, Board* board, GenType genType) {
 
     Color side = board->sideToMove;
@@ -91,21 +105,33 @@ void enumeratePawnMoves(MoveList* moveList, Board* board, GenType genType) {
         Square start = getLSB(pawnsOn7);
         clearLSB(pawnsOn7);
         
-        Bitboard pushTarget = boardFromSq(start + (side == WHITE ? 8 : -8));
+        Bitboard pushTarget = boardFromSq(start + (side == WHITE ? 8 : -8)) & ~board->occ[BOTH];
         createPromotions(moveList, board, start, pushTarget, genType, 0);
 
         Bitboard attacks = pawnAttackTable[side * 64 + start];
         createPromotions(moveList, board, start, attacks, genType, 1);
     }
-    // regular push and attacks
+    
+    // bulk pushes
+    Bitboard singlePush = singlePawnPush(pawns, side, board->occ[BOTH]);
+    Bitboard doublePush = doublePawnPush(pawns, side, board->occ[BOTH]);
+
+    pruneAttacks(board, &singlePush, genType);
+    pruneAttacks(board, &doublePush, genType);
+
+    createPawnPushes(moveList, board, singlePush, 0);
+    createPawnPushes(moveList, board, doublePush, 1);
+
+    // regular attacks
     while (pawnsNotOn7) {
 
         Square start = getLSB(pawnsNotOn7);
         clearLSB(pawnsNotOn7);
-        Bitboard attacks = pawnAttackTable[side * 64 + start];
 
+        Bitboard attacks = pawnAttackTable[side * 64 + start] & board->occ[!side];
         createNormals(moveList, board, start, attacks, genType);
     }
+
     // en passant
     if (board->enPassantSq != NONE) {
 
@@ -227,42 +253,42 @@ void enumerateQueenMoves(MoveList* moveList, Board* board, GenType genType) {
 
 void generateLegalMoves(MoveList* moveList, Board* board) {
 
-    updateCheckInfo(board);
-    
-    enumerateKingMoves(moveList, board);
+    MoveList temp = { 0 };
 
     if (popCount(board->checkers) == 1) {
 
-        enumeratePawnMoves(moveList, board, EVASIONS);
-        enumerateBishopMoves(moveList, board, EVASIONS);
-        enumerateKnightMoves(moveList, board, EVASIONS);
-        enumerateRookMoves(moveList, board, EVASIONS);
-        enumerateQueenMoves(moveList, board, EVASIONS);
+        enumeratePawnMoves(&temp, board, EVASIONS);
+        enumerateKnightMoves(&temp, board, EVASIONS);
+        enumerateBishopMoves(&temp, board, EVASIONS);
+        enumerateRookMoves(&temp, board, EVASIONS);
+        enumerateQueenMoves(&temp, board, EVASIONS);
     }
     else if (popCount(board->checkers) == 0) {
         
-        enumeratePawnMoves(moveList, board, NON_EVASIONS);
-        enumerateCastlings(moveList, board);
-        enumerateBishopMoves(moveList, board, NON_EVASIONS);
-        enumerateKnightMoves(moveList, board, NON_EVASIONS);
-        enumerateRookMoves(moveList, board, NON_EVASIONS);
-        enumerateQueenMoves(moveList, board, NON_EVASIONS);
+        enumeratePawnMoves(&temp, board, NON_EVASIONS);
+        enumerateKnightMoves(&temp, board, NON_EVASIONS);
+        enumerateBishopMoves(&temp, board, NON_EVASIONS);
+        enumerateRookMoves(&temp, board, NON_EVASIONS);
+        enumerateQueenMoves(&temp, board, NON_EVASIONS);
+        enumerateCastlings(&temp, board);
     }
+    
+    enumerateKingMoves(&temp, board);\
 
     // pinned pieces can only move in ray between attacker and king
-    for (int i = 0; i < moveList->end; ++i) {
+    for (int i = 0; i < temp.end; ++i) {
 
-        Square start = getStartSq(moveList->moveArray[i]);
+        Square start = getStartSq(temp.moveArray[i]);
         if (board->pinned & boardFromSq(start)) {
 
-            Square target = getTargetSq(moveList->moveArray[i]);
+            Square target = getTargetSq(temp.moveArray[i]);
             Square pinnerSq = board->pinners[start];
-            Square kSq = board->pieces[board->sideToMove][KING];
+            Square kSq = getLSB(board->pieces[board->sideToMove][KING]);
 
             if (!(boardFromSq(target) & rays[kSq][pinnerSq])) {
-                removeMove(moveList, i);
-                --i;
+                continue;
             }
         }
+        addMove(moveList, temp.moveArray[i]);
     }
 }

@@ -21,6 +21,16 @@ static inline Move create(Square start, Square target, Piece promPiece, MoveType
     return (Move)(start | (target << 6) | (promPiece << 12) | (moveT << 14));
 }
 
+static inline void printMove(Move m) {
+
+    printf("%c%c%c%c", fileFromSquare(getStartSq(m)), rankFromSquare(getStartSq(m)),
+        fileFromSquare(getTargetSq(m)), rankFromSquare(getTargetSq(m)));
+    if (getMoveType(m) == PROMOTION) {
+        printf("%c", PROM_PIECE[getPromotionPiece(m)]);
+    }
+}
+
+
 // list of moves definition, theoretical max moves in position is 218 so array size set to 256
 typedef struct {    
     Move moveArray[256];
@@ -38,24 +48,13 @@ static inline void removeMove(MoveList* moveList, int index) {
     moveList->moveArray[index] = moveList->moveArray[--moveList->end];
 }
 
-static inline char rankFromSquare(Square sq) {
+static inline void printMoveList(MoveList* moveList) {
 
-    return sq / 8 + '1';
-}
+    for (int i = 0; i < moveList->end; ++i) {
 
-static inline char fileFromSquare(Square sq) {
-
-    return FILE_MAP[sq % 8];
-}
-
-static inline void printMove(Move m) {
-
-    printf("%c%c%c%c", fileFromSquare(getStartSq(m)), rankFromSquare(getStartSq(m)),
-        fileFromSquare(getTargetSq(m)), rankFromSquare(getTargetSq(m)));
-    if (getMoveType(m) == PROMOTION) {
-        printf("%c", PROM_PIECE[getPromotionPiece(m)]);
+        printMove(moveList->moveArray[i]);
+        printf("\n");
     }
-    printf("\n");
 }
 
 #endif

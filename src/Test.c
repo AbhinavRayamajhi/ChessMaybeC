@@ -144,6 +144,7 @@ int perft(Board* board, int depth, int rootDepth, int debug, int deeperSearch) {
     for (int i = 0; i < moveList.end; ++i) {
 
         History h;
+
         makeMove(board, &h, moveList.moveArray[i]);
         int node = perft(board, depth - 1, rootDepth, debug, deeperSearch);
         unmakeMove(board, &h);
@@ -225,6 +226,6 @@ void runAllPerftTests() {
     gettimeofday(&end, NULL);
     int nodes = 1494874546;
 
-    printf("Nodes per second: %ld\n", nodes / (end.tv_sec - start.tv_sec));
+    printf("Nodes per second: %ld\n", nodes / (end.tv_sec- start.tv_sec));
 
 }

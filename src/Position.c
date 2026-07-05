@@ -1,5 +1,7 @@
 #include "Position.h"
 
+#include <assert.h>
+
 void makeMove(Board* board, History* history, Move move) {
 
     Square start = getStartSq(move);
@@ -37,10 +39,11 @@ void makeMove(Board* board, History* history, Move move) {
             // king move cancels all castling
             if (piece == KING) {
 
-                if (board->sideToMove) board->castlingRight &= ~BLACK_CASTLING;
-                else board->castlingRight &= ~WHITE_CASTLING;
+                if (board->sideToMove == WHITE) board->castlingRight &= ~WHITE_CASTLING;
+                else board->castlingRight &= ~BLACK_CASTLING;
             }
         }
+        
         if (getSq(board->pieces[!board->sideToMove][piece], target)) {
 
             history->captured = piece;
@@ -101,6 +104,7 @@ void makeMove(Board* board, History* history, Move move) {
 
     board->sideToMove ^= 1;
     updateOcc(board);
+    updateCheckInfo(board);
 }
 
 void unmakeMove(Board* board, History* history) {

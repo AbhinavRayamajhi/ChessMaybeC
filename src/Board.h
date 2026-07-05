@@ -33,4 +33,6 @@ void updateCheckInfo(Board* board);
 CastlingRights getCR(Board* board, Color side);
 Bitboard getSquareAttackers(Board* board, Square sq, Color side);
 
+void printBoard(Board* board);
+
 #endif

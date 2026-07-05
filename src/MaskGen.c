@@ -42,7 +42,7 @@ void generatePawnAttackMasks() {
 
         Bitboard mask = 0ULL;
         Bitboard cur = 0ULL;
-        setSq(cur, sq);
+        setSq(cur, sq % 64);
 
         if(sq < 64) {
             mask |= bitboardShift(cur, NORTH_WEST);
@@ -159,8 +159,12 @@ Bitboard getRays(Square sq1, Square sq2) {
 
 void generateRays() {
 
-    for (Square sq = 0; sq != NONE; ++sq) {
-        
+    for (Square sq1 = A1; sq1 != NONE; ++sq1) {
+
+        for (Square sq2 = A1; sq2 != NONE; ++sq2) {
+
+            rays[sq1][sq2] = getRays(sq1, sq2);
+        }
     }
 }
 
@@ -175,36 +179,36 @@ void initMasks() {
 
 Bitboard singlePawnPush(Bitboard pawns, Color sideToMove, Bitboard occ) {
 
-    if (sideToMove) {
-        return (pawns >> 8) & ~occ;
+    if (sideToMove == WHITE) {
+        return (pawns << 8) & ~occ;
     }
 
-    return (pawns << 8) & ~occ;
+    return (pawns >> 8) & ~occ;
 }
 
 Bitboard doublePawnPush(Bitboard pawns, Color sideToMove, Bitboard occ) {
 
-    if (sideToMove) {
-        return singlePawnPush(singlePawnPush(pawns & RANK_7, BLACK, occ), BLACK, occ);
+    if (sideToMove == WHITE) {
+        return singlePawnPush(singlePawnPush(pawns & RANK_2, WHITE, occ), WHITE, occ);
     }
 
-    return singlePawnPush(singlePawnPush(pawns & RANK_2, WHITE, occ), WHITE, occ);
+    return singlePawnPush(singlePawnPush(pawns & RANK_7, BLACK, occ), BLACK, occ);
 }
 
 Bitboard pawnLeftAttack(Bitboard pawns, Color sideToMove) {
 
-    if (sideToMove) {
-        return (pawns & ~FILE_A) >> 9;
+    if (sideToMove == WHITE) {
+        return (pawns & ~FILE_A) << 7;
     }
 
-    return (pawns & ~FILE_A) << 7;
+    return (pawns & ~FILE_A) >> 9;
 }
 
 Bitboard pawnRightAttack(Bitboard pawns, Color sideToMove) {
 
-    if (sideToMove) {
-        return (pawns & ~FILE_H) >> 7;
+    if (sideToMove == WHITE) {
+        return (pawns & ~FILE_H) << 9;
     }
 
-    return (pawns & ~FILE_H) << 9;
+    return (pawns & ~FILE_H) >> 7;
 }

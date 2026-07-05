@@ -4,6 +4,8 @@
 #include "MaskGen.h"
 #include "Magic.h"
 
+#include <assert.h>
+
 Board getInitialBoard() {
 
     Board board;
@@ -25,7 +27,7 @@ Board getInitialBoard() {
     updateOcc(&board);
 
     for (Square sq = A1; sq != NONE; ++sq) {
-        board.pinners[sq] = 0ULL;
+        board.pinners[sq] = NONE;
     }
 
     board.sideToMove = WHITE;
@@ -53,7 +55,7 @@ Board getZeroBoard() {
     board.occ[BOTH] = board.occ[WHITE] = board.occ[BLACK] = 0ULL;
 
     for (Square sq = A1; sq != NONE; ++sq) {
-        board.pinners[sq] = 0ULL;
+        board.pinners[sq] = NONE;
     }
 
     board.sideToMove = 0;
@@ -172,51 +174,38 @@ void updateCheckInfo(Board* board) {
 
     Color side = board->sideToMove;
     Square kSq = getLSB(board->pieces[side][KING]);
-    Bitboard occ = board->occ[side];
+    Bitboard enemySliders = board->pieces[!side][QUEEN] | board->pieces[!side][ROOK] | board->pieces[!side][BISHOP];
 
     for (Square sq = 0; sq != NONE; ++sq) {
 
-        board->pinners[sq] = 0;
+        board->pinners[sq] = NONE;
     }
     board->checkers = getSquareAttackers(board, kSq, side);
     board->pinned = EMPTY_BOARD;
     board->checkMask = EMPTY_BOARD;
 
-    Bitboard rookAttacks = getRookAttacks(board->occ[BOTH], kSq);
-    Bitboard bishopAttacks = getBishopAttacks(board->occ[BOTH], kSq);
+    // calculate rook and bishop attacks from ksq considering only enemy pieces
+    Bitboard rookAtt = getRookAttacks(board->occ[!side], kSq);
+    rookAtt &= board->pieces[!side][ROOK] | board->pieces[!side][QUEEN];
 
-    // get rid of any friendly piece in the rook rays from king sq and calculate again
-    rookAttacks &= board->occ[side];
-    occ ^= rookAttacks;
-    rookAttacks = getRookAttacks(occ, kSq);
+    Bitboard bishopAtt = getBishopAttacks(board->occ[!side], kSq);
+    bishopAtt &= board->pieces[!side][BISHOP] | board->pieces[!side][QUEEN];
 
-    // find enemy pinners if any
-    rookAttacks &= board->pieces[!side][QUEEN] | board->pieces[!side][ROOK];
+    Bitboard pinners = rookAtt | bishopAtt;
 
-    while (rookAttacks) {
-        Square pinSq = getLSB(rookAttacks);
-        clearLSB(rookAttacks);
-        Bitboard curPinned = rays[kSq][pinSq] & board->occ[side];
-        board->pinned |= curPinned;
-        board->pinners[getLSB(curPinned)] = pinSq;
-    }
+    // see if there's a pinned piece
+    while (pinners) {
 
-    occ = board->occ[side];
+        Square pinSq = getLSB(pinners);
+        clearLSB(pinners);
 
-    // get rid of any friendly piece in the bishop rays from king sq and calculate again
-    bishopAttacks &= board->occ[side];
-    occ ^= bishopAttacks;
-    bishopAttacks = getBishopAttacks(occ, kSq);
+        Bitboard maybePinned = rays[kSq][pinSq] & board->occ[side];
+        // if only one self piece between king and pinner, pinned
+        if (popCount(maybePinned) == 1) {
 
-    // find enemy pinners if any
-    bishopAttacks &= board->pieces[!side][QUEEN] | board->pieces[!side][BISHOP];
-
-    while (bishopAttacks) {
-        Square pinSq = getLSB(bishopAttacks);
-        clearLSB(bishopAttacks);
-        Bitboard curPinned = rays[kSq][pinSq] & board->occ[side];
-        board->pinned |= curPinned;
-        board->pinners[getLSB(curPinned)] = pinSq;
+            board->pinned |= maybePinned;
+            board->pinners[getLSB(maybePinned)] = pinSq;
+        }
     }
 
     // no checkers no check mask
@@ -231,7 +220,6 @@ void updateCheckInfo(Board* board) {
         Bitboard mask = EMPTY_BOARD;
         setSq(mask, checkerSq);
 
-        Bitboard enemySliders = board->pieces[!side][QUEEN] | board->pieces[!side][ROOK] | board->pieces[!side][BISHOP];
         // to allow blocking moves for slider checks, knight attacks will not trigger this so only choice is to capture or move
         if (mask & enemySliders)
             mask |= rays[kSq][checkerSq];
@@ -248,28 +236,33 @@ CastlingRights getCR(Board* board, Color side) {
 
     if (side == WHITE) {
 
-        if (getSquareAttackers(board, F1, WHITE) || getSquareAttackers(board, G1, WHITE) || (1ULL << F1) & occ) {
-            res &= ~WHITE_OO;
+        if (getSquareAttackers(board, F1, WHITE) || getSquareAttackers(board, G1, WHITE)
+            || getSq(occ, F1) || getSq(occ, G1)) {
+            res &= ~WHITE_KINGSIDE;
         }
-        if (getSquareAttackers(board, D1, WHITE) || getSquareAttackers(board, C1, WHITE) || (1ULL << D1) & occ) {
-            res &= ~WHITE_OOO;
+        if (getSquareAttackers(board, D1, WHITE) || getSquareAttackers(board, C1, WHITE)
+            || getSq(occ, D1) || getSq(occ, C1) || getSq(occ, B1)) {
+            res &= ~WHITE_QUEENSIDE;
         }
     }
     else {
 
-        if (getSquareAttackers(board, F8, BLACK) || getSquareAttackers(board, G8, BLACK) || (1ULL << F8) & occ) {
-            res &= ~BLACK_OO;
+        if (getSquareAttackers(board, F8, BLACK) || getSquareAttackers(board, G8, BLACK)
+            || getSq(occ, F8) || getSq(occ, G8)) {
+            res &= ~BLACK_KINGSIDE;
         }
-        if (getSquareAttackers(board, D8, BLACK) || getSquareAttackers(board, C8, BLACK) || (1ULL << D8) & occ) {
-            res &= ~BLACK_OOO;
+        if (getSquareAttackers(board, D8, BLACK) || getSquareAttackers(board, C8, BLACK)
+            || getSq(occ, D8) || getSq(occ, C8) || getSq(occ, B8)) {
+            res &= ~BLACK_QUEENSIDE;
         }
     }
-
+    
     return res;
 }
 
 Bitboard getSquareAttackers(Board* board, Square sq, Color side) {
 
+    assert(sq < 64);
     Bitboard attackers = 0ULL;
     Bitboard self = 1ULL << sq;
 
@@ -280,4 +273,33 @@ Bitboard getSquareAttackers(Board* board, Square sq, Color side) {
     attackers |= board->pieces[!side][KING] & kingTable[sq];
 
     return attackers;
+}
+
+void printBoard(Board* board) {
+
+    for (int rank = 7; rank >= 0; --rank) {
+
+        printf("%d   ", rank + 1);
+        for (int file = 0; file < 8; ++file) {
+
+            Square sq = rank * 8 + file;
+            for (Piece p = PAWN; p <= PIECE_COUNT; ++p) {
+
+                if (p == PIECE_COUNT) {
+                    printf("%c ", '.');
+                    break;
+                }
+                if (getSq(board->pieces[WHITE][p], sq)) {
+                    printf("%c ", PIECES[p]);;
+                    break;
+                }
+                if (getSq(board->pieces[BLACK][p], sq)) {
+                    printf("%c ", PIECES[PIECE_COUNT + p]);
+                    break;
+                }
+            }
+        }
+        printf("\n");
+    }
+    printf("\n    a b c d e f g h\n\n");
 }
