@@ -46,16 +46,6 @@ static const Bitboard RANKS[] = { RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6
 
 static const char FILE_MAP[8] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' };
 
-static inline char rankFromSquare(Square sq) {
-
-    return sq / 8 + '1';
-}
-
-static inline char fileFromSquare(Square sq) {
-
-    return FILE_MAP[sq % 8];
-}
-
 #define DIAG_1 0x0000000000000080
 #define DIAG_2 0x0000000000008040
 #define DIAG_3 0x0000000000804020
@@ -133,10 +123,24 @@ typedef enum : uint8_t {
 	NO_PROMOTION_PIECE = 0
 } Piece;
 
-static const char PIECES[] = { 'P', 'N', 'B', 'R', 'Q', 'K',
-							   'p', 'n', 'b', 'r', 'q', 'k'};
+typedef enum : uint8_t {
+	W_PAWN = 0,
+	W_KNIGHT,
+	W_BISHOP,
+	W_ROOK,
+	W_QUEEN,
+	W_KING,
+	B_PAWN,
+	B_KNIGHT,
+	B_BISHOP,
+	B_ROOK,
+	B_QUEEN,
+	B_KING,
+	C_COLOR_COUNT,
+	C_NO_PIECE
+} ColoredPiece;
 
-static const char PROM_PIECE[] = { 'N', 'B', 'R' };
+static const char PIECES[] = { 'P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q', 'k'};
 
 typedef enum : uint8_t {
 	NO_CASTLING,

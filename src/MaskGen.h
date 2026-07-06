@@ -8,7 +8,7 @@
 #include "Types.h"
 
 extern Bitboard knightTable[SQ_COUNT];
-extern Bitboard pawnAttackTable[SQ_COUNT * 2];
+extern Bitboard pawnAttackTable[BOTH][SQ_COUNT];
 extern Bitboard kingTable[SQ_COUNT];
 extern Bitboard rookTable[SQ_COUNT];
 extern Bitboard bishopTable[SQ_COUNT];

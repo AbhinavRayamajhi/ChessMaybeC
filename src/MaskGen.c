@@ -3,7 +3,7 @@
 #include "Bitboard.h"
 
 Bitboard knightTable[SQ_COUNT];
-Bitboard pawnAttackTable[SQ_COUNT * 2];
+Bitboard pawnAttackTable[BOTH][SQ_COUNT];
 Bitboard kingTable[SQ_COUNT];
 
 Bitboard rookTable[SQ_COUNT];
@@ -37,23 +37,25 @@ void generateKnightMasks() {
 }
 
 void generatePawnAttackMasks() {
-    // For black pawns index sq + 64, gives us the correct masks
-    for (int sq = 0; sq < 128; ++sq) {
 
-        Bitboard mask = 0ULL;
-        Bitboard cur = 0ULL;
-        setSq(cur, sq % 64);
+    for (Color c = WHITE; c != BOTH; ++c) {
+        for (Square sq = A1; sq != NONE; ++sq) {
 
-        if(sq < 64) {
-            mask |= bitboardShift(cur, NORTH_WEST);
-            mask |= bitboardShift(cur, NORTH_EAST); 
+            Bitboard mask = 0ULL;
+            Bitboard cur = 0ULL;
+            setSq(cur, sq);
+
+            if (c == WHITE) {
+                mask |= bitboardShift(cur, NORTH_WEST);
+                mask |= bitboardShift(cur, NORTH_EAST);
+            }
+            else {
+                mask |= bitboardShift(cur, SOUTH_WEST);
+                mask |= bitboardShift(cur, SOUTH_EAST);
+            }
+
+            pawnAttackTable[c][sq] = mask;
         }
-        else {
-            mask |= bitboardShift(cur, SOUTH_WEST);
-            mask |= bitboardShift(cur, SOUTH_EAST); 
-        }
-
-        pawnAttackTable[sq] = mask;
     }
 }
 

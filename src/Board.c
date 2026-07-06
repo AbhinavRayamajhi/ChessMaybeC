@@ -3,8 +3,25 @@
 #include "Bitboard.h"
 #include "MaskGen.h"
 #include "Magic.h"
+#include "Helpers.h"
 
 #include <assert.h>
+
+// runs when getting board from startpos or fen to create a piece & square mapping list
+void createPieceSqs(Board* board) {
+
+    for (Square sq = A1; sq != NONE; ++sq) {
+
+        for (Piece p = PAWN; p != PIECE_COUNT; ++p) {
+            for (Color c = WHITE; c != BOTH; ++c) {
+                if (getSq(board->pieces[c][p], sq)) {
+                    board->pieceSqs[sq] = makeColored(c, p);
+                    break;
+                }
+            }
+        }
+    }
+}
 
 Board getInitialBoard() {
 
@@ -25,8 +42,10 @@ Board getInitialBoard() {
     board.pieces[BLACK][KING]   = board.pieces[WHITE][KING]   << 56;
 
     updateOcc(&board);
+    createPieceSqs(&board);
 
     for (Square sq = A1; sq != NONE; ++sq) {
+
         board.pinners[sq] = NONE;
     }
 
@@ -55,6 +74,7 @@ Board getZeroBoard() {
     board.occ[BOTH] = board.occ[WHITE] = board.occ[BLACK] = 0ULL;
 
     for (Square sq = A1; sq != NONE; ++sq) {
+        board.pieceSqs[sq] = C_NO_PIECE;
         board.pinners[sq] = NONE;
     }
 
@@ -146,6 +166,7 @@ Board getBoardFromFen(const char* FEN) {
     FEN++;
     board.fullMoveClock = atoi(FEN);
 
+    createPieceSqs(&board);
     updateOcc(&board);
     updateCheckInfo(&board);
     return board;
@@ -167,6 +188,11 @@ void updateOcc(Board* board) {
         board->occ[BLACK] |= board->pieces[BLACK][p];
     }
 
+    board->occ[BOTH] = board->occ[WHITE] | board->occ[BLACK];
+}
+
+void updateCombOcc(Board* board) {
+    
     board->occ[BOTH] = board->occ[WHITE] | board->occ[BLACK];
 }
 
@@ -264,9 +290,8 @@ Bitboard getSquareAttackers(Board* board, Square sq, Color side) {
 
     assert(sq < 64);
     Bitboard attackers = 0ULL;
-    Bitboard self = 1ULL << sq;
 
-    attackers |= board->pieces[!side][PAWN] & (pawnLeftAttack(self, side) | pawnRightAttack(self, side));
+    attackers |= board->pieces[!side][PAWN] & pawnAttackTable[side][sq];
     attackers |= board->pieces[!side][KNIGHT] & knightTable[sq];
     attackers |= (board->pieces[!side][BISHOP] | board->pieces[!side][QUEEN]) & getBishopAttacks(board->occ[BOTH], sq);
     attackers |= (board->pieces[!side][ROOK] | board->pieces[!side][QUEEN]) & getRookAttacks(board->occ[BOTH], sq);

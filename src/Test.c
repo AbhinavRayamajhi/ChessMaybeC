@@ -5,6 +5,7 @@
 
 #include "Bitboard.h"
 #include "Types.h"
+#include "Move.h"
 #include "MaskGen.h"
 #include "Magic.h"
 #include "MoveGen.h"
@@ -37,14 +38,14 @@ void KnightTableTest() {
 void PawnAttackTableTest() {
 
     
-    ASSERT(popCount(pawnAttackTable[A2]) == 1, "White Pawn on A2 should have 1 attacks.");
-    ASSERT(popCount(pawnAttackTable[E2]) == 2, "White Pawn on E2 should have 2 attacks.");
-    ASSERT(popCount(pawnAttackTable[E7]) == 2, "White Pawn on E7 should have 2 attacks.");
-    ASSERT(popCount(pawnAttackTable[H7]) == 1, "White Pawn on H7 should have 1 attacks.");
-    ASSERT(popCount(pawnAttackTable[A2 + 64]) == 1, "Black Pawn on A2 should have 1 attacks.");
-    ASSERT(popCount(pawnAttackTable[E2 + 64]) == 2, "Black Pawn on E2 should have 2 attacks.");
-    ASSERT(popCount(pawnAttackTable[E7 + 64]) == 2, "Black Pawn on E7 should have 2 attacks.");
-    ASSERT(popCount(pawnAttackTable[H7 + 64]) == 1, "Black Pawn on H7 should have 1 attacks.");
+    ASSERT(popCount(pawnAttackTable[WHITE][A2]) == 1, "White Pawn on A2 should have 1 attacks.");
+    ASSERT(popCount(pawnAttackTable[WHITE][E2]) == 2, "White Pawn on E2 should have 2 attacks.");
+    ASSERT(popCount(pawnAttackTable[WHITE][E7]) == 2, "White Pawn on E7 should have 2 attacks.");
+    ASSERT(popCount(pawnAttackTable[WHITE][H7]) == 1, "White Pawn on H7 should have 1 attacks.");
+    ASSERT(popCount(pawnAttackTable[BLACK][A2]) == 1, "Black Pawn on A2 should have 1 attacks.");
+    ASSERT(popCount(pawnAttackTable[BLACK][E2]) == 2, "Black Pawn on E2 should have 2 attacks.");
+    ASSERT(popCount(pawnAttackTable[BLACK][E7]) == 2, "Black Pawn on E7 should have 2 attacks.");
+    ASSERT(popCount(pawnAttackTable[BLACK][H7]) == 1, "Black Pawn on H7 should have 1 attacks.");
     printf("%s\n", "Pawn Attack Table Tests passed...");
 }
 
@@ -133,11 +134,11 @@ void MagicTableTests() {
 
 int perft(Board* board, int depth, int rootDepth, int debug, int deeperSearch) {
 
-    MoveList moveList;
-    moveList.end = 0;
+    MoveList moveList = { .end = 0 };
     generateLegalMoves(&moveList, board);
 
-    if (depth == 1) return moveList.end;
+    if (depth == 0) return 1;
+    if (!debug && depth == 1) return moveList.end;
 
     int numMoves = 0;
 
@@ -150,13 +151,13 @@ int perft(Board* board, int depth, int rootDepth, int debug, int deeperSearch) {
         unmakeMove(board, &h);
 
         if (debug && depth == rootDepth) {
-            printMove(moveList.moveArray[i]);
+            printMove(moveList.moveArray[i], board->sideToMove);
             printf(" : %d\n", node);
         }
 
         if (deeperSearch && (rootDepth - 1 == depth)) {
             printf("\t");
-            printMove(moveList.moveArray[i]);
+            printMove(moveList.moveArray[i], board->sideToMove);
             printf(" : %d\n", node);
         }
 

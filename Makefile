@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -O2 
+CFLAGS = -Wall -Wextra -O3 -DNDEBUG
 SRC = src/main.c src/MaskGen.c src/Test.c src/Magic.c src/MoveGen.c src/Board.c src/Position.c src/Search.c
 OUT = build/main.exe
 

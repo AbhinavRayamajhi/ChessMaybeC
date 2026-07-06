@@ -3,7 +3,9 @@
 
 #include <stdio.h>
 #include <stdint.h>
+
 #include "Types.h"
+#include "Helpers.h"
 
 //  0 -  5 : start sq
 //  6 - 11 : target sq
@@ -21,12 +23,12 @@ static inline Move create(Square start, Square target, Piece promPiece, MoveType
     return (Move)(start | (target << 6) | (promPiece << 12) | (moveT << 14));
 }
 
-static inline void printMove(Move m) {
+static __attribute__((unused)) void printMove(Move m, Color side) {
 
     printf("%c%c%c%c", fileFromSquare(getStartSq(m)), rankFromSquare(getStartSq(m)),
         fileFromSquare(getTargetSq(m)), rankFromSquare(getTargetSq(m)));
     if (getMoveType(m) == PROMOTION) {
-        printf("%c", PROM_PIECE[getPromotionPiece(m)]);
+        printf("%c", PIECES[side * PIECE_COUNT + getPromotionPiece(m)]);
     }
 }
 
@@ -48,11 +50,11 @@ static inline void removeMove(MoveList* moveList, int index) {
     moveList->moveArray[index] = moveList->moveArray[--moveList->end];
 }
 
-static inline void printMoveList(MoveList* moveList) {
+static __attribute__((unused)) void printMoveList(MoveList* moveList, Color side) {
 
     for (int i = 0; i < moveList->end; ++i) {
 
-        printMove(moveList->moveArray[i]);
+        printMove(moveList->moveArray[i], side);
         printf("\n");
     }
 }

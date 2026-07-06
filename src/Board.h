@@ -8,6 +8,7 @@ typedef struct {
 
     Bitboard pieces[COLOR_COUNT][PIECE_COUNT];
     Bitboard occ[COLOR_COUNT + 1];
+    ColoredPiece pieceSqs[SQ_COUNT];
     Square pinners[SQ_COUNT];
 
     Color sideToMove;
@@ -28,6 +29,7 @@ Board getBoardFromFen(const char* FEN);
 void moveP(Board* board, Square start, Square target, Piece p, Color side);
 
 void updateOcc(Board* b);
+void updateCombOcc(Board* b);
 void updateCheckInfo(Board* board);
 
 CastlingRights getCR(Board* board, Color side);

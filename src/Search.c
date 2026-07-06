@@ -24,8 +24,7 @@ int negamax(Board* board, int depth, int* nodes, int alpha, int beta) {
         return evaluate(board);
     }
 
-    MoveList moveList;
-    moveList.end = 0;
+    MoveList moveList = { .end = 0 };
 
     generateLegalMoves(&moveList, board);
 
@@ -50,8 +49,7 @@ int negamax(Board* board, int depth, int* nodes, int alpha, int beta) {
     
 Move findBestMove(Board* board, int depth, int* nodes) {
 
-    MoveList moveList;
-    moveList.end = 0;
+    MoveList moveList = { .end = 0 };
 
     int best = INT32_MIN + 1;
     Move bestMove = 0;
