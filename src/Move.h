@@ -13,6 +13,13 @@
 // 14 - 15 : move type(0- normal, 1 - promotion, 2 - en passant, 3 - castling)
 typedef uint16_t Move;
 
+typedef enum : uint16_t {
+	NORMAL,
+	PROMOTION,
+	EN_PASSANT,
+	CASTLING  
+} MoveType;
+
 static inline Square getStartSq(Move m) { return m & 0x3F; }
 static inline Square getTargetSq(Move m) { return (m >> 6) & 0x3F; }
 static inline Piece getPromotionPiece(Move m) { return ((m >> 12) & 0b11) + 1; }

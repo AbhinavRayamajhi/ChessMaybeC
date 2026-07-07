@@ -5,11 +5,15 @@
 #include "Search.h"
 #include "Move.h"
 #include "Position.h"
+#include "Zobrist.h"
+
+Zobrist ZOBRIST;
 
 int main() {
 
     initMasks();
     initMagicTables();
+    initZobrist(&ZOBRIST);
 
     runAllPerftTests();
 

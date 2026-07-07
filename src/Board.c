@@ -4,11 +4,13 @@
 #include "MaskGen.h"
 #include "Magic.h"
 #include "Helpers.h"
+#include "PRNG.h"
+#include "Zobrist.h"
 
 #include <assert.h>
 
 // runs when getting board from startpos or fen to create a piece & square mapping list
-void createPieceSqs(Board* board) {
+static void createPieceSqs(Board* board) {
 
     for (Square sq = A1; sq != NONE; ++sq) {
 
@@ -21,6 +23,27 @@ void createPieceSqs(Board* board) {
             }
         }
     }
+}
+
+// to get initial zobrist key from startpos or fen
+static void createZKey(Board* board) {
+
+    board->zobristKey = 0;
+
+    for (Square sq = A1; sq < SQ_COUNT; ++sq) {
+        
+        if (board->pieceSqs[sq] != C_NO_PIECE)
+            board->zobristKey  ^= ZOBRIST.pieceRandoms[board->pieceSqs[sq]][sq];
+    }
+
+    if (board->sideToMove == BLACK)
+        board->zobristKey  ^= ZOBRIST.side;
+    
+    board->zobristKey ^= ZOBRIST.castlingRights[board->castlingRight];
+    
+    if (board->enPassantSq != NONE)
+        board->zobristKey  ^= ZOBRIST.enPassantFile[board->enPassantSq % 8];
+
 }
 
 Board getInitialBoard() {
@@ -39,19 +62,20 @@ Board getInitialBoard() {
     board.pieces[BLACK][BISHOP] = board.pieces[WHITE][BISHOP] << 56;
     board.pieces[BLACK][ROOK]   = board.pieces[WHITE][ROOK]   << 56;
     board.pieces[BLACK][QUEEN]  = board.pieces[WHITE][QUEEN]  << 56;
-    board.pieces[BLACK][KING]   = board.pieces[WHITE][KING]   << 56;
+    board.pieces[BLACK][KING] = board.pieces[WHITE][KING] << 56;
+
+    board.sideToMove = WHITE;
+    board.castlingRight = 0b1111;
+    board.enPassantSq = NONE;
 
     updateOcc(&board);
     createPieceSqs(&board);
+    createZKey(&board);
 
     for (Square sq = A1; sq != NONE; ++sq) {
 
         board.pinners[sq] = NONE;
     }
-
-    board.sideToMove = WHITE;
-    board.castlingRight = 0b1111;
-    board.enPassantSq = NONE;
 
     board.checkMask = 0ULL;
     board.checkers = 0ULL;
@@ -166,8 +190,10 @@ Board getBoardFromFen(const char* FEN) {
     FEN++;
     board.fullMoveClock = atoi(FEN);
 
-    createPieceSqs(&board);
     updateOcc(&board);
+    createPieceSqs(&board);
+    createZKey(&board);
+
     updateCheckInfo(&board);
     return board;
 }

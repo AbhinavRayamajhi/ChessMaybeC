@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #define Bitboard uint64_t
+#define Key      uint64_t
 
 typedef enum : uint8_t {
 	A1 = 0, B1, C1, D1, E1, F1, G1, H1,
@@ -136,7 +137,7 @@ typedef enum : uint8_t {
 	B_ROOK,
 	B_QUEEN,
 	B_KING,
-	C_COLOR_COUNT,
+	C_PIECE_COUNT,
 	C_NO_PIECE
 } ColoredPiece;
 
@@ -156,19 +157,5 @@ typedef enum : uint8_t {
 	BLACK_CASTLING = BLACK_KINGSIDE | BLACK_QUEENSIDE,
 	ALL_CASTLING   = WHITE_CASTLING | BLACK_CASTLING
 } CastlingRights;
-
-typedef enum : uint16_t {
-	NORMAL,
-	PROMOTION,
-	EN_PASSANT,
-	CASTLING  
-} MoveType;
-
-typedef enum : uint64_t {
-	WHITE_OO  = 0x0000000000000060ULL,
-	WHITE_OOO = 0x000000000000000EULL,
-	BLACK_OO  = WHITE_OO << 56,
-	BLACK_OOO = WHITE_OOO << 56
-} CastleMask;
 
 #endif

@@ -11,6 +11,7 @@ typedef struct {
     ColoredPiece pieceSqs[SQ_COUNT];
     Square pinners[SQ_COUNT];
 
+    Key zobristKey;
     Color sideToMove;
     CastlingRights castlingRight;
     Square enPassantSq;
@@ -21,6 +22,7 @@ typedef struct {
 
     int halfMoveClock;
     int fullMoveClock;
+
 } Board;
 
 Board getInitialBoard();

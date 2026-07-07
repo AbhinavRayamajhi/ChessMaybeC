@@ -2,17 +2,7 @@
 
 #include "Bitboard.h"
 #include "MaskGen.h"
-
-// Generate 64 bit random num
-uint64_t rand64() {
-    return ((uint64_t)rand() << 32) | rand();
-}
-
-// ANDing 3 random numbers gives us lower active bits for our random num, which is a requirement
-// for magic numbers to reduce the size of the lookup 
-uint64_t randomMagic() {
-    return rand64() & rand64() & rand64();
-}
+#include "PRNG.h"
 
 Bitboard rookAttacksForBlockers(Bitboard blockers, int sq) {
 
@@ -72,11 +62,14 @@ uint64_t findRookMagicNumber(int sq, int bits) {
     int found = 0;
     uint64_t magic = 0ULL;
 
+    PRNG state;
+    seed(&state, PRNG_SEED_MAGIC);
+
     while (!found) {
 
         // table size hard coded to 4096 because max rook blocker subset is 2^12 = 4096 
         Bitboard hash_checker[4096] = {0ULL};
-        magic = randomMagic();
+        magic = randomMagic(&state);
         Bitboard subset = 0ULL;
 
         do {
@@ -106,11 +99,14 @@ uint64_t findBishopMagicNumber(int sq, int bits) {
     int found = 0;
     uint64_t magic = 0ULL;
 
+    PRNG state;
+    seed(&state, PRNG_SEED_MAGIC);
+
     while (!found) {
 
         // table size hard coded to 512 because max bishop blocker subset is 2^9 = 512 
         Bitboard hash_checker[512] = {0ULL};
-        magic = randomMagic();
+        magic = randomMagic(&state);
         Bitboard subset = 0ULL;
 
         do {
