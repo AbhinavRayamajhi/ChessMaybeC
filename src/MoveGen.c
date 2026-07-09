@@ -12,12 +12,12 @@ static inline void pruneAttacks(Board* board, Bitboard* attacks, GenType genType
     if (genType == CAPTURES) {
 
         Bitboard enemy = board->occ[!board->sideToMove];
-        *attacks &= enemy;
+        *attacks &= enemy & board->checkMask;
     }
     else if (genType == QUIETS) {
         
         Bitboard occ = board->occ[BOTH];
-        *attacks &= ~occ;
+        *attacks &= ~occ & board->checkMask;
     }
     else if (genType == EVASIONS) {
 

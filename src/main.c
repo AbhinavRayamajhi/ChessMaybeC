@@ -6,6 +6,7 @@
 #include "Move.h"
 #include "Position.h"
 #include "Zobrist.h"
+#include "TTable.h"
 
 Zobrist ZOBRIST;
 

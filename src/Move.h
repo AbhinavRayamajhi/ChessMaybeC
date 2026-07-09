@@ -32,8 +32,12 @@ static inline Move create(Square start, Square target, Piece promPiece, MoveType
 
 static __attribute__((unused)) void printMove(Move m, Color side) {
 
-    printf("%c%c%c%c", fileFromSquare(getStartSq(m)), rankFromSquare(getStartSq(m)),
-        fileFromSquare(getTargetSq(m)), rankFromSquare(getTargetSq(m)));
+    printf("%c%c%c%c",
+        fileFromSquare(getStartSq(m)),
+        rankFromSquare(getStartSq(m)),
+        fileFromSquare(getTargetSq(m)),
+        rankFromSquare(getTargetSq(m)));
+    
     if (getMoveType(m) == PROMOTION) {
         printf("%c", PIECES[side * PIECE_COUNT + getPromotionPiece(m)]);
     }

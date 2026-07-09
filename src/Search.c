@@ -25,10 +25,10 @@ int negamax(Board* board, int depth, int* nodes, int alpha, int beta) {
     }
 
     MoveList moveList = { .end = 0 };
-
     generateLegalMoves(&moveList, board);
 
     for (int i = 0; i < moveList.end; ++i) {
+
         History history;
         makeMove(board, &history, moveList.moveArray[i]);
         int score = -negamax(board, depth - 1, nodes, -beta, -alpha);
@@ -49,17 +49,17 @@ int negamax(Board* board, int depth, int* nodes, int alpha, int beta) {
     
 Move findBestMove(Board* board, int depth, int* nodes) {
 
-    MoveList moveList = { .end = 0 };
-
-    int best = INT32_MIN + 1;
+    int best = MIN_SCORE;
     Move bestMove = 0;
-    
+
+    MoveList moveList = { .end = 0 };
     generateLegalMoves(&moveList, board);
 
     for (int i = 0; i < moveList.end; ++i) {
+
         History history;
         makeMove(board, &history, moveList.moveArray[i]);
-        int score = -negamax(board, depth - 1, nodes, INT32_MIN + 1, INT32_MAX);
+        int score = -negamax(board, depth - 1, nodes, MIN_SCORE, MAX_SCORE);
         unmakeMove(board, &history);
 
         (*nodes)++;

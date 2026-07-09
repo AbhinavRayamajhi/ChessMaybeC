@@ -200,7 +200,7 @@ Board getBoardFromFen(const char* FEN) {
 
 void moveP(Board* board, Square start, Square target, Piece p, Color side) {
 
-    Bitboard movement = 1ULL << start | 1ULL << target;
+    Bitboard movement = boardFromSq(start) | boardFromSq(target);
     board->pieces[side][p] ^= movement;
     board->occ[side] ^= movement;
     board->occ[BOTH] ^= movement;

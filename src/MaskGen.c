@@ -1,6 +1,7 @@
 #include "MaskGen.h"
 
 #include "Bitboard.h"
+#include "Helpers.h"
 
 Bitboard knightTable[SQ_COUNT];
 Bitboard pawnAttackTable[BOTH][SQ_COUNT];
@@ -89,8 +90,8 @@ void generateRookMasks() {
         Bitboard mask = 0ULL;
         
         // Remove edge squares from each direction, not necessary for magic bitboards
-        mask |= FILES[sq % 8] & ~RANK_1 & ~RANK_8;
-        mask |= RANKS[sq / 8] & ~FILE_A & ~FILE_H;
+        mask |= FILES[fileOf(sq)] & ~RANK_1 & ~RANK_8;
+        mask |= RANKS[rankOf(sq)] & ~FILE_A & ~FILE_H;
 
         // Remove current sq from mask
         popSq(mask, sq);
@@ -105,8 +106,8 @@ void generateBishopMasks() {
 
         Bitboard mask = 0ULL;
 
-        int rank = sq / 8;
-        int file = sq % 8;
+        int rank = rankOf(sq);
+        int file = fileOf(sq);
 
         // Remove edge squares from each direction, not necessary for magic bitboards
         mask |=  DIAGS[7 + rank - file] & ~RANK_1 & ~RANK_8 & ~FILE_A & ~FILE_H;
@@ -133,8 +134,8 @@ Bitboard computeRay(Square sq, Direction dir) {
 
 Bitboard getRays(Square sq1, Square sq2) {
 
-	int rankDiff = (sq2 / 8) - (sq1 / 8);
-	int fileDiff = (sq2 % 8) - (sq1 % 8);
+	int rankDiff = rankOf(sq2) - rankOf(sq1);
+	int fileDiff = fileOf(sq2) - fileOf(sq1);
 
 	if (fileDiff == 0) {
 		if (rankDiff > 0) return computeRay(sq1, NORTH) & computeRay(sq2, SOUTH);
@@ -171,6 +172,7 @@ void generateRays() {
 }
 
 void initMasks() {
+    
     generateKnightMasks();
     generatePawnAttackMasks();
     generateKingMasks();

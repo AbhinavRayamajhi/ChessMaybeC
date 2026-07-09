@@ -9,6 +9,12 @@
 #define Bitboard uint64_t
 #define Key      uint64_t
 
+#define Rank     uint8_t
+#define File     uint8_t
+
+#define Score    uint16_t
+#define Depth    uint8_t
+
 typedef enum : uint8_t {
 	A1 = 0, B1, C1, D1, E1, F1, G1, H1,
 	    A2, B2, C2, D2, E2, F2, G2, H2,
@@ -44,8 +50,6 @@ typedef enum : uint8_t {
 
 static const Bitboard FILES[] = {FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H};
 static const Bitboard RANKS[] = { RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8 };
-
-static const char FILE_MAP[8] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' };
 
 #define DIAG_1 0x0000000000000080
 #define DIAG_2 0x0000000000008040
@@ -157,5 +161,16 @@ typedef enum : uint8_t {
 	BLACK_CASTLING = BLACK_KINGSIDE | BLACK_QUEENSIDE,
 	ALL_CASTLING   = WHITE_CASTLING | BLACK_CASTLING
 } CastlingRights;
+
+typedef enum {
+    MAX_SCORE = 32000,
+    MIN_SCORE = -32000
+}Scores;
+
+typedef enum : uint8_t{
+	EXACT,
+	LOWER,
+	UPPER
+}BoundType;
 
 #endif

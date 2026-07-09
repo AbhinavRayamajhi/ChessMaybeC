@@ -1,13 +1,23 @@
 #include "Types.h"
 
+static inline Rank rankOf(Square sq) {
+
+    return sq >> 3;
+}
+
+static inline File fileOf(Square sq) {
+
+    return sq & 0b000111;
+}
+
 static inline char rankFromSquare(Square sq) {
 
-    return sq / 8 + '1';
+    return rankOf(sq) + '1';
 }
 
 static inline char fileFromSquare(Square sq) {
 
-    return FILE_MAP[sq % 8];
+    return fileOf(sq) + 'a';
 }
 
 static inline Color colorOf(ColoredPiece piece) {
