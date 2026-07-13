@@ -7,6 +7,7 @@
 #include "Position.h"
 #include "Zobrist.h"
 #include "TTable.h"
+#include "UCI.h"
 
 Zobrist ZOBRIST;
 
@@ -16,7 +17,8 @@ int main() {
     initMagicTables();
     initZobrist(&ZOBRIST);
 
-    runAllPerftTests();
+    uciLoop();
+    // runAllPerftTests();
 
     // Board board = getBoardFromFen("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
 
