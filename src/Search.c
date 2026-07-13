@@ -18,7 +18,7 @@ int evaluate(const Board* board) {
     return board->sideToMove == WHITE ? score : -score;
 }
 
-int negamax(Board* board, int depth, int* nodes, int alpha, int beta) {
+int negamax(Board* board, Depth depth, int* nodes, Score alpha, Score beta) {
 
     if (depth == 0) {
         return evaluate(board);
@@ -31,7 +31,7 @@ int negamax(Board* board, int depth, int* nodes, int alpha, int beta) {
 
         History history;
         makeMove(board, &history, moveList.moveArray[i]);
-        int score = -negamax(board, depth - 1, nodes, -beta, -alpha);
+        Score score = -negamax(board, depth - 1, nodes, -beta, -alpha);
         unmakeMove(board, &history);
 
         (*nodes)++;
@@ -47,9 +47,9 @@ int negamax(Board* board, int depth, int* nodes, int alpha, int beta) {
     return alpha;
 }
     
-Move findBestMove(Board* board, int depth, int* nodes) {
+Move findBestMove(Board* board, Depth depth, int* nodes) {
 
-    int best = MIN_SCORE;
+    Score best = MIN_SCORE;
     Move bestMove = 0;
 
     MoveList moveList = { .end = 0 };
@@ -59,7 +59,7 @@ Move findBestMove(Board* board, int depth, int* nodes) {
 
         History history;
         makeMove(board, &history, moveList.moveArray[i]);
-        int score = -negamax(board, depth - 1, nodes, MIN_SCORE, MAX_SCORE);
+        Score score = -negamax(board, depth - 1, nodes, MIN_SCORE, MAX_SCORE);
         unmakeMove(board, &history);
 
         (*nodes)++;

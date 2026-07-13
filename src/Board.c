@@ -326,6 +326,12 @@ Bitboard getSquareAttackers(Board* board, Square sq, Color side) {
     return attackers;
 }
 
+Bitboard isKingInCheck(Board* board) {
+
+    Color side = board->sideToMove;
+    return getSquareAttackers(board, getLSB(board->pieces[side][KING]), side);
+}
+
 void printBoard(Board* board) {
 
     for (int rank = 7; rank >= 0; --rank) {

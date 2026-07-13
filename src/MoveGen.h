@@ -10,9 +10,11 @@ typedef enum : uint8_t {
     EVASIONS,
     NON_EVASIONS,
     CAPTURES,
-    QUIETS
+    QUIETS,
+    ALL
 } GenType;
 
+void generateCaptures(MoveList* moveList, Board* board);
 void generateLegalMoves(MoveList* moveList, Board* board);
 
 #endif

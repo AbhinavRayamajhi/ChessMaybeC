@@ -162,6 +162,16 @@ typedef enum : uint8_t {
 	ALL_CASTLING   = WHITE_CASTLING | BLACK_CASTLING
 } CastlingRights;
 
+typedef enum : uint8_t {
+	PUSH,
+	ATTACK
+} PushOrAttack;
+
+typedef enum : uint8_t {
+	SINGLE,
+	DOUBLE
+} PawnPushType;
+
 typedef enum {
     MAX_SCORE = 32000,
     MIN_SCORE = -32000
