@@ -30,19 +30,27 @@ static inline Move create(Square start, Square target, Piece promPiece, MoveType
     return (Move)(start | (target << 6) | (promPiece << 12) | (moveT << 14));
 }
 
-static __attribute__((unused)) void printMove(Move m, Color side) {
+static inline void moveToString(Move m, Color side, char* res) {
 
-    printf("%c%c%c%c",
-        fileFromSquare(getStartSq(m)),
-        rankFromSquare(getStartSq(m)),
-        fileFromSquare(getTargetSq(m)),
-        rankFromSquare(getTargetSq(m)));
+    uint8_t end = 0;
+
+    res[end++] = fileFromSquare(getStartSq(m));
+    res[end++] = rankFromSquare(getStartSq(m));
+    res[end++] = fileFromSquare(getTargetSq(m));
+    res[end++] = rankFromSquare(getTargetSq(m));
     
     if (getMoveType(m) == PROMOTION) {
-        printf("%c", PIECES[side * PIECE_COUNT + getPromotionPiece(m)]);
+        res[end++] = PIECES[side * PIECE_COUNT + getPromotionPiece(m)];
     }
+    res[end] = '\0';
 }
 
+static __attribute__((unused)) void printMove(Move m, Color side) {
+
+    char res[6];
+    moveToString(m, side, res);
+    printf("%s", res);
+}
 
 // list of moves definition, theoretical max moves in position is 218 so array size set to 256
 typedef struct {    
