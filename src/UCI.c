@@ -6,6 +6,8 @@
 #include "Board.h"
 #include "Move.h"
 #include "Position.h"
+#include "Search.h"
+#include "Timing.h"
 
 // static buffer size for char* that can hold around 1400 - 1600 moves
 #define BUFFER_SIZE 8192
@@ -55,6 +57,10 @@ void uciLoop() {
         else if (!strcmp(buffer, "quit")) {
 
             break;
+        }
+        else if (!strcmp(buffer, "stop") || !strcmp(buffer, "ponderhit")) {
+
+            KEEP_SEARCHING = 0;
         }
         // Not part of UCI commands, prints ASCII board
         else if (!strcmp(buffer, "print")) {
@@ -126,5 +132,64 @@ static void parsePosition(char* buffer, Board* board) {
 
 static void parseGo(char* buffer, Board* board) {
 
+    // remove "go " from buffer
+    strtok(buffer, " ");
 
+    uint64_t start = getCurrentTime();
+
+    uint64_t wtime = 0;
+    uint64_t btime = 0;
+    uint64_t winc = 0;
+    uint64_t binc = 0;
+    uint64_t movestogo = 0;
+
+    Depth depth = 6; // fixed depth for now
+    uint64_t nodes = 0;
+    uint64_t movetime = 0;
+
+    // Global variable in search that will constantly be checked by search to stop if signal is sent
+    KEEP_SEARCHING = 0;
+
+    char* token;
+    while ((token = strtok(NULL, " ")) != NULL) {
+
+        if (!strcmp(token, "wtime")) {
+            wtime = atoi(strtok(NULL, " "));
+        }
+        else if (!strcmp(token, "btime")) {
+            btime = atoi(strtok(NULL, " "));
+        }
+        else if (!strcmp(token, "winc")) {
+            winc = atoi(strtok(NULL, " "));
+        }
+        else if (!strcmp(token, "binc")) {
+            binc = atoi(strtok(NULL, " "));
+        }
+        else if (!strcmp(token, "movestogo")) {
+            movestogo= atoi(strtok(NULL, " "));
+        }
+
+        else if (!strcmp(token, "depth")) {
+            depth = atoi(strtok(NULL, " "));
+        }
+        else if (!strcmp(token, "nodes")) {
+            nodes = atoi(strtok(NULL, " "));
+        }
+        else if (!strcmp(token, "movetime")) {
+            movetime= atoi(strtok(NULL, " "));
+        }
+
+        else if (!strcmp(token, "infinite") || !strcmp(token, "ponder")) {
+            KEEP_SEARCHING = 1;
+        }
+    }
+
+    uint64_t tempNodeCount = 0;
+    Move bestMove = findBestMove(board, depth, &tempNodeCount);
+
+    printf("%s", "bestmove ");
+    printMove(bestMove, board->sideToMove);
+    
+    printf("%c", '\n');
+    fflush(stdout);
 }

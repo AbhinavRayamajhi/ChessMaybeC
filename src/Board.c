@@ -46,46 +46,6 @@ static void createZKey(Board* board) {
 
 }
 
-Board getInitialBoard() {
-
-    Board board;
-
-    board.pieces[WHITE][PAWN]   = 0x000000000000FF00ULL;
-    board.pieces[WHITE][KNIGHT] = 0x0000000000000042ULL;
-    board.pieces[WHITE][BISHOP] = 0x0000000000000024ULL;
-    board.pieces[WHITE][ROOK]   = 0x0000000000000081ULL;
-    board.pieces[WHITE][QUEEN]  = 0x0000000000000008ULL;
-    board.pieces[WHITE][KING]   = 0x0000000000000010ULL;
-
-    board.pieces[BLACK][PAWN]   = board.pieces[WHITE][PAWN]   << 40;
-    board.pieces[BLACK][KNIGHT] = board.pieces[WHITE][KNIGHT] << 56;
-    board.pieces[BLACK][BISHOP] = board.pieces[WHITE][BISHOP] << 56;
-    board.pieces[BLACK][ROOK]   = board.pieces[WHITE][ROOK]   << 56;
-    board.pieces[BLACK][QUEEN]  = board.pieces[WHITE][QUEEN]  << 56;
-    board.pieces[BLACK][KING] = board.pieces[WHITE][KING] << 56;
-
-    board.sideToMove = WHITE;
-    board.castlingRight = 0b1111;
-    board.enPassantSq = NONE;
-
-    updateOcc(&board);
-    createPieceSqs(&board);
-    createZKey(&board);
-
-    for (Square sq = A1; sq != NONE; ++sq) {
-
-        board.pinners[sq] = NONE;
-    }
-
-    board.checkMask = 0ULL;
-    board.checkers = 0ULL;
-    board.pinned = 0ULL;
-
-    board.halfMoveClock = board.fullMoveClock = 0;
-
-    return board;
-}
-
 Board getZeroBoard() {
 
     Board board;
@@ -112,6 +72,38 @@ Board getZeroBoard() {
 
     board.halfMoveClock = 0;
     board.fullMoveClock = 0;
+
+    return board;
+}
+
+Board getInitialBoard() {
+
+    Board board = getZeroBoard();
+
+    board.pieces[WHITE][PAWN]   = 0x000000000000FF00ULL;
+    board.pieces[WHITE][KNIGHT] = 0x0000000000000042ULL;
+    board.pieces[WHITE][BISHOP] = 0x0000000000000024ULL;
+    board.pieces[WHITE][ROOK]   = 0x0000000000000081ULL;
+    board.pieces[WHITE][QUEEN]  = 0x0000000000000008ULL;
+    board.pieces[WHITE][KING]   = 0x0000000000000010ULL;
+
+    board.pieces[BLACK][PAWN]   = board.pieces[WHITE][PAWN]   << 40;
+    board.pieces[BLACK][KNIGHT] = board.pieces[WHITE][KNIGHT] << 56;
+    board.pieces[BLACK][BISHOP] = board.pieces[WHITE][BISHOP] << 56;
+    board.pieces[BLACK][ROOK]   = board.pieces[WHITE][ROOK]   << 56;
+    board.pieces[BLACK][QUEEN]  = board.pieces[WHITE][QUEEN]  << 56;
+    board.pieces[BLACK][KING] = board.pieces[WHITE][KING] << 56;
+
+    board.sideToMove = WHITE;
+    board.castlingRight = 0b1111;
+    board.enPassantSq = NONE;
+
+    updateOcc(&board);
+    createPieceSqs(&board);
+    createZKey(&board);
+    updateCheckInfo(&board);
+
+    board.halfMoveClock = board.fullMoveClock = 0;
 
     return board;
 }

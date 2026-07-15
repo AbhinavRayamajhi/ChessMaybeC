@@ -355,7 +355,6 @@ void generateLegalMoves(MoveList* moveList, Board* board) {
 
         if (!legalCheck(board, temp.moveArray[i])) continue;
 
-        moveList->moveArray[moveList->end] = temp.moveArray[i];
-        ++moveList->end;
+        moveList->moveArray[moveList->end++] = temp.moveArray[i];
     }
 }

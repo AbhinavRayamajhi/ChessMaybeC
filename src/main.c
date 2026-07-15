@@ -20,10 +20,12 @@ int main() {
     uciLoop();
     // runAllPerftTests();
 
-    // Board board = getBoardFromFen("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
+    // Board board = getInitialBoard(); // getBoardFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
     // History h;
-    // makeMove(&board, &h, create(B4, B1, NO_PROMOTION_PIECE, NORMAL));
+    // makeMove(&board, &h, create(E2, E4, NO_PROMOTION_PIECE, NORMAL));
+    // printf("%d\n", board.enPassantSq);
+    // perft(&board, 1, 1, 1, 0);
     // makeMove(&board, &h, create(D6, D5, NO_PROMOTION_PIECE, NORMAL));
     // makeMove(&board, &h, create(B1, G1, NO_PROMOTION_PIECE, NORMAL));
     // makeMove(&board, &h, create(H4, G5, NO_PROMOTION_PIECE, NORMAL));
